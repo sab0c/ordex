@@ -31,15 +31,15 @@ export class OrdersService {
       status: createOrderDto.status ?? OrderStatus.ABERTA,
     };
 
-    return await this.orderRepository.create(orderData);
+    return this.orderRepository.create(orderData);
   }
 
   async findAll(): Promise<Order[]> {
-    return await this.orderRepository.findAll();
+    return this.orderRepository.findAll();
   }
 
   async findById(id: number): Promise<Order> {
-    return await this.findOrderOrFail(id);
+    return this.findOrderOrFail(id);
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
@@ -51,7 +51,7 @@ export class OrdersService {
 
     Object.assign(order, updatedData);
 
-    return await this.orderRepository.save(order);
+    return this.orderRepository.save(order);
   }
 
   async updateStatus(
@@ -66,7 +66,7 @@ export class OrdersService {
 
     order.status = nextStatus;
 
-    return await this.orderRepository.save(order);
+    return this.orderRepository.save(order);
   }
 
   private async findOrderOrFail(id: number): Promise<Order> {

@@ -19,17 +19,17 @@ export class OrdersController {
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
-    return await this.ordersService.create(createOrderDto);
+    return this.ordersService.create(createOrderDto);
   }
 
   @Get()
   async findAll(): Promise<Order[]> {
-    return await this.ordersService.findAll();
+    return this.ordersService.findAll();
   }
 
   @Get(':id')
   async findById(@Param('id', ParseIntPipe) id: number): Promise<Order> {
-    return await this.ordersService.findById(id);
+    return this.ordersService.findById(id);
   }
 
   @Patch(':id')
@@ -37,7 +37,7 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: UpdateOrderDto,
   ): Promise<Order> {
-    return await this.ordersService.update(id, updateOrderDto);
+    return this.ordersService.update(id, updateOrderDto);
   }
 
   @Patch(':id/status')
@@ -45,6 +45,6 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ): Promise<Order> {
-    return await this.ordersService.updateStatus(id, updateOrderStatusDto);
+    return this.ordersService.updateStatus(id, updateOrderStatusDto);
   }
 }

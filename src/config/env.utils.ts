@@ -2,7 +2,7 @@ export function parseBoolean(
   value: string | undefined,
   defaultValue: boolean = false,
 ): boolean {
-  if (value === undefined) {
+  if (value === undefined || value.trim().length === 0) {
     return defaultValue;
   }
 
@@ -23,7 +23,7 @@ export function parseNumber(
   value: string | undefined,
   defaultValue: number = 0,
 ): number {
-  if (value === undefined) {
+  if (value === undefined || value.trim().length === 0) {
     return defaultValue;
   }
 
@@ -36,7 +36,7 @@ export function parseOrigins(
   value: string | undefined,
   defaultValue: string[] = [],
 ): string[] {
-  if (!value) {
+  if (value === undefined || value.trim().length === 0) {
     return defaultValue;
   }
 

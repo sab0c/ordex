@@ -14,11 +14,11 @@ export class TypeOrmOrderRepository implements OrderRepository {
   async create(data: CreateOrderRepositoryData): Promise<Order> {
     const order = this.repository.create(data);
 
-    return await this.repository.save(order);
+    return this.repository.save(order);
   }
 
   async findAll(): Promise<Order[]> {
-    return await this.repository.find({
+    return this.repository.find({
       order: {
         data_criacao: 'DESC',
       },
@@ -26,12 +26,12 @@ export class TypeOrmOrderRepository implements OrderRepository {
   }
 
   async findById(id: number): Promise<Order | null> {
-    return await this.repository.findOne({
+    return this.repository.findOne({
       where: { id },
     });
   }
 
   async save(order: Order): Promise<Order> {
-    return await this.repository.save(order);
+    return this.repository.save(order);
   }
 }
