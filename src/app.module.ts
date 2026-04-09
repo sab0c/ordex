@@ -1,9 +1,14 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { Order } from './orders/entities/order.entity';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { createDatabaseConfig } from './config/database.config';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -13,15 +18,16 @@ import { Order } from './orders/entities/order.entity';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.getOrThrow<string>('DATABASE_URL'),
-        entities: [Order],
-        synchronize: true,
-      }),
+      useFactory: createDatabaseConfig,
     }),
+    OrdersModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestLoggerMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

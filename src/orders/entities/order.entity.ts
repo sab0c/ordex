@@ -5,13 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export enum OrderStatus {
-  ABERTA = 'Aberta',
-  EM_ANDAMENTO = 'Em andamento',
-  CONCLUIDA = 'Concluída',
-  CANCELADA = 'Cancelada',
-}
+import { OrderStatus } from '../enums/order-status.enum';
 
 @Entity({ name: 'orders' })
 export class Order {
