@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -26,10 +25,10 @@ export class OrdersService {
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     const orderData: CreateOrderRepositoryData = {
-      cliente: this.parseRequiredText(createOrderDto.cliente, 'cliente'),
-      descricao: this.parseRequiredText(createOrderDto.descricao, 'descricao'),
-      valor_estimado: this.parseValorEstimado(createOrderDto.valor_estimado),
-      status: this.parseStatus(createOrderDto.status ?? OrderStatus.ABERTA),
+      cliente: createOrderDto.cliente,
+      descricao: createOrderDto.descricao,
+      valor_estimado: this.formatValorEstimado(createOrderDto.valor_estimado),
+      status: createOrderDto.status ?? OrderStatus.ABERTA,
     };
 
     return await this.orderRepository.create(orderData);
@@ -37,6 +36,10 @@ export class OrdersService {
 
   async findAll(): Promise<Order[]> {
     return await this.orderRepository.findAll();
+  }
+
+  async findById(id: number): Promise<Order> {
+    return await this.findOrderOrFail(id);
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
@@ -56,7 +59,7 @@ export class OrdersService {
     updateOrderStatusDto: UpdateOrderStatusDto,
   ): Promise<Order> {
     const order = await this.findOrderOrFail(id);
-    const nextStatus = this.parseStatus(updateOrderStatusDto.status);
+    const nextStatus = updateOrderStatusDto.status;
 
     this.ensureOrderIsEditable(order);
     this.ensureStatusTransitionIsAllowed(order.status, nextStatus);
@@ -82,18 +85,15 @@ export class OrdersService {
     const updatedData: UpdateOrderRepositoryData = {};
 
     if (updateOrderDto.cliente !== undefined) {
-      updatedData.cliente = this.parseRequiredText(updateOrderDto.cliente, 'cliente');
+      updatedData.cliente = updateOrderDto.cliente;
     }
 
     if (updateOrderDto.descricao !== undefined) {
-      updatedData.descricao = this.parseRequiredText(
-        updateOrderDto.descricao,
-        'descricao',
-      );
+      updatedData.descricao = updateOrderDto.descricao;
     }
 
     if (updateOrderDto.valor_estimado !== undefined) {
-      updatedData.valor_estimado = this.parseValorEstimado(
+      updatedData.valor_estimado = this.formatValorEstimado(
         updateOrderDto.valor_estimado,
       );
     }
@@ -121,39 +121,7 @@ export class OrdersService {
     }
   }
 
-  private parseRequiredText(value: unknown, fieldName: string): string {
-    if (typeof value !== 'string' || value.trim().length === 0) {
-      throw new BadRequestException(`O campo ${fieldName} é obrigatório.`);
-    }
-
-    return value.trim();
-  }
-
-  private parseValorEstimado(value: unknown): string {
-    if (value === undefined || value === null || value === '') {
-      throw new BadRequestException('O campo valor_estimado é obrigatório.');
-    }
-
-    const numericValue = typeof value === 'string' ? Number(value) : value;
-
-    if (typeof numericValue !== 'number' || Number.isNaN(numericValue)) {
-      throw new BadRequestException('O campo valor_estimado deve ser numérico.');
-    }
-
-    return numericValue.toFixed(2);
-  }
-
-  private parseStatus(value: unknown): OrderStatus {
-    if (typeof value !== 'string') {
-      throw new BadRequestException('O campo status é inválido.');
-    }
-
-    const validStatuses = Object.values(OrderStatus);
-
-    if (!validStatuses.includes(value as OrderStatus)) {
-      throw new BadRequestException('O campo status é inválido.');
-    }
-
-    return value as OrderStatus;
+  private formatValorEstimado(value: number): string {
+    return value.toFixed(2);
   }
 }

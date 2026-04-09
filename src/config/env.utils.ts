@@ -6,7 +6,17 @@ export function parseBoolean(
     return defaultValue;
   }
 
-  return value.toLowerCase() === 'true';
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (normalizedValue === 'true' || normalizedValue === '1') {
+    return true;
+  }
+
+  if (normalizedValue === 'false' || normalizedValue === '0') {
+    return false;
+  }
+
+  return defaultValue;
 }
 
 export function parseNumber(
@@ -26,7 +36,7 @@ export function parseOrigins(
   value: string | undefined,
   defaultValue: string[] = [],
 ): string[] {
-  if (value === undefined) {
+  if (!value) {
     return defaultValue;
   }
 

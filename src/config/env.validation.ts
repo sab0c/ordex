@@ -10,6 +10,18 @@ type EnvVariables = {
   AUTH_PASSWORD?: string;
 };
 
+function ensureBoolean(value: string | undefined, key: string): void {
+  if (value === undefined) {
+    return;
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (!['true', 'false', '1', '0'].includes(normalizedValue)) {
+    throw new Error(`Environment variable ${key} must be a valid boolean.`);
+  }
+}
+
 function ensureRequired(value: string | undefined, key: string): string {
   if (!value || value.trim().length === 0) {
     throw new Error(`Environment variable ${key} is required.`);
@@ -35,6 +47,7 @@ export function validateEnv(config: EnvVariables): EnvVariables {
   ensureRequired(config.AUTH_USERNAME, 'AUTH_USERNAME');
   ensureRequired(config.AUTH_PASSWORD, 'AUTH_PASSWORD');
 
+  ensureBoolean(config.DB_SYNCHRONIZE, 'DB_SYNCHRONIZE');
   ensureNumber(config.THROTTLE_TTL, 'THROTTLE_TTL');
   ensureNumber(config.THROTTLE_LIMIT, 'THROTTLE_LIMIT');
 
