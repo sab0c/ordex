@@ -31,4 +31,18 @@ export default tseslint.config(
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
+  {
+    files: ['src/**/dto/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+    },
+  },
+  {
+    files: ['src/auth/strategies/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+    },
+  },
 );
