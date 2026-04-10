@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -22,6 +23,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from '../dto/create-order.dto';
+import { ListOrdersQueryDto } from '../dto/list-orders-query.dto';
+import { ListOrdersResponseDto } from '../dto/list-orders-response.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { Order } from '../entities/order.entity';
@@ -48,12 +51,13 @@ export class OrdersController {
   @ApiResponse({
     status: 200,
     description: 'Lista de ordens retornada com sucesso.',
-    type: Order,
-    isArray: true,
+    type: ListOrdersResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Token JWT ausente ou inválido.' })
-  async findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+  async findAll(
+    @Query() queryDto: ListOrdersQueryDto,
+  ): Promise<ListOrdersResponseDto> {
+    return this.ordersService.findAll(queryDto);
   }
 
   @Get(':id')

@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ORDER_REPOSITORY } from '../orders.constants';
+import { OrderSortBy, SortOrder } from '../dto/list-orders-query.dto';
 import { Order } from '../entities/order.entity';
 import { OrderStatus } from '../enums/order-status.enum';
 import { OrderRepository } from '../repositories/order.repository';
@@ -156,13 +157,29 @@ describe('OrdersService', () => {
         cliente: 'Outro Cliente',
       }),
     ];
+    const paginatedOrders = {
+      data: orders,
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 2,
+        totalPages: 1,
+      },
+    };
 
-    repository.findAll.mockResolvedValue(orders);
+    repository.findAll.mockResolvedValue(paginatedOrders);
 
-    const result = await service.findAll();
+    const result = await service.findAll({});
 
-    expect(repository.findAll.mock.calls).toHaveLength(1);
-    expect(result).toEqual(orders);
+    expect(repository.findAll.mock.calls[0]?.[0]).toEqual({
+      cliente: undefined,
+      status: undefined,
+      page: 1,
+      limit: 10,
+      sortBy: OrderSortBy.DATA_CRIACAO,
+      sortOrder: SortOrder.DESC,
+    });
+    expect(result).toEqual(paginatedOrders);
   });
 
   it('should return an order by id', async () => {

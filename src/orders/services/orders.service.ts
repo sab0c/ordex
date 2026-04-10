@@ -6,6 +6,12 @@ import {
 } from '@nestjs/common';
 import { ORDER_REPOSITORY } from '../orders.constants';
 import { CreateOrderDto } from '../dto/create-order.dto';
+import {
+  ListOrdersQueryDto,
+  OrderSortBy,
+  SortOrder,
+} from '../dto/list-orders-query.dto';
+import { ListOrdersResponseDto } from '../dto/list-orders-response.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { Order } from '../entities/order.entity';
@@ -34,8 +40,15 @@ export class OrdersService {
     return this.orderRepository.create(orderData);
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.orderRepository.findAll();
+  async findAll(queryDto: ListOrdersQueryDto): Promise<ListOrdersResponseDto> {
+    return this.orderRepository.findAll({
+      cliente: queryDto.cliente,
+      status: queryDto.status,
+      page: queryDto.page ?? 1,
+      limit: queryDto.limit ?? 10,
+      sortBy: queryDto.sort_by ?? OrderSortBy.DATA_CRIACAO,
+      sortOrder: queryDto.sort_order ?? SortOrder.DESC,
+    });
   }
 
   async findById(id: number): Promise<Order> {
