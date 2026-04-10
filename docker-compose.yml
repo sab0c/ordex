@@ -1,0 +1,41 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "npm run migration:run && npm run start:prod"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ordex
+      DB_SYNCHRONIZE: 'false'
+      CORS_ORIGIN: http://localhost:3000,http://localhost:3001
+      THROTTLE_TTL: 60000
+      THROTTLE_LIMIT: 60
+      JWT_SECRET: docker-secret-change-me
+      JWT_EXPIRES_IN: 1h
+      AUTH_USERNAME: admin
+      AUTH_PASSWORD: admin
+    ports:
+      - '3000:3000'
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ordex
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d ordex']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

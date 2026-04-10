@@ -7,7 +7,7 @@ export default new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
   synchronize: parseBoolean(process.env.DB_SYNCHRONIZE, false),
-  entities: [join(__dirname, '..', 'orders', 'entities', '*.entity.{js,ts}')],
+  entities: [join(__dirname, '..', '**', '*.entity.{js,ts}')],
   migrations: [join(__dirname, 'migrations', '*.{js,ts}')],
   migrationsTableName: 'typeorm_migrations',
 });

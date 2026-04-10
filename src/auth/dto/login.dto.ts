@@ -1,11 +1,23 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { trimStringTransform } from '../../common/transforms/trim-string.transform';
 
 export class LoginDto {
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({
+    example: 'admin',
+    description: 'Usuário configurado para autenticação simples.',
+  })
+  @IsString({ message: 'O campo username deve ser um texto.' })
+  @IsNotEmpty({ message: 'O campo username é obrigatório.' })
+  @Transform(trimStringTransform)
   username!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({
+    example: 'strong-password',
+    description: 'Senha configurada para autenticação simples.',
+  })
+  @IsString({ message: 'O campo password deve ser um texto.' })
+  @IsNotEmpty({ message: 'O campo password é obrigatório.' })
   password!: string;
 }

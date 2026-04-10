@@ -1,20 +1,33 @@
 import { Transform, Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { trimStringTransform } from '../../common/transforms/trim-string.transform';
 
 export class UpdateOrderDto {
+  @ApiPropertyOptional({
+    example: 'Maria da Silva',
+    description: 'Nome do cliente da ordem de serviço.',
+  })
   @IsOptional()
   @IsString({ message: 'O campo cliente deve ser um texto.' })
   @IsNotEmpty({ message: 'O campo cliente não pode estar vazio.' })
   @Transform(trimStringTransform)
   cliente?: string;
 
+  @ApiPropertyOptional({
+    example: 'Troca de tela e revisão geral',
+    description: 'Descrição do serviço solicitado.',
+  })
   @IsOptional()
   @IsString({ message: 'O campo descricao deve ser um texto.' })
   @IsNotEmpty({ message: 'O campo descricao não pode estar vazio.' })
   @Transform(trimStringTransform)
   descricao?: string;
 
+  @ApiPropertyOptional({
+    example: 199.9,
+    description: 'Valor estimado atualizado da ordem.',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber(

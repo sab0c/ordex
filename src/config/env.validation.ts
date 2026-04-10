@@ -6,6 +6,7 @@ type EnvVariables = {
   THROTTLE_TTL?: string;
   THROTTLE_LIMIT?: string;
   JWT_SECRET?: string;
+  JWT_EXPIRES_IN?: string;
   AUTH_USERNAME?: string;
   AUTH_PASSWORD?: string;
 };
@@ -23,7 +24,7 @@ function ensureBoolean(value: string | undefined, key: string): void {
 }
 
 function ensureRequired(value: string | undefined, key: string): string {
-  if (!value || value.trim().length === 0) {
+  if (value === undefined || value.trim().length === 0) {
     throw new Error(`Environment variable ${key} is required.`);
   }
 
@@ -47,6 +48,7 @@ export function validateEnv(config: EnvVariables): EnvVariables {
   ensureRequired(config.AUTH_USERNAME, 'AUTH_USERNAME');
   ensureRequired(config.AUTH_PASSWORD, 'AUTH_PASSWORD');
 
+  ensureRequired(config.JWT_EXPIRES_IN, 'JWT_EXPIRES_IN');
   ensureBoolean(config.DB_SYNCHRONIZE, 'DB_SYNCHRONIZE');
   ensureNumber(config.THROTTLE_TTL, 'THROTTLE_TTL');
   ensureNumber(config.THROTTLE_LIMIT, 'THROTTLE_LIMIT');

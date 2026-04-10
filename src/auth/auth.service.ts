@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -17,17 +18,31 @@ export class AuthService {
       this.configService.getOrThrow<string>('AUTH_PASSWORD');
 
     if (
-      loginDto.username !== expectedUsername ||
-      loginDto.password !== expectedPassword
+      !this.matchesCredential(loginDto.username, expectedUsername) ||
+      !this.matchesCredential(loginDto.password, expectedPassword)
     ) {
       throw new UnauthorizedException('Credenciais inválidas.');
     }
 
-    const access_token = await this.jwtService.signAsync({
+    const accessToken = await this.jwtService.signAsync({
       sub: loginDto.username,
       username: loginDto.username,
     });
 
-    return { access_token };
+    return { access_token: accessToken };
+  }
+
+  private matchesCredential(
+    receivedValue: string,
+    expectedValue: string,
+  ): boolean {
+    const receivedBuffer = Buffer.from(receivedValue);
+    const expectedBuffer = Buffer.from(expectedValue);
+
+    if (receivedBuffer.length !== expectedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(receivedBuffer, expectedBuffer);
   }
 }

@@ -49,7 +49,7 @@ describe('OrdersService', () => {
       service.updateStatus(1, { status: OrderStatus.CONCLUIDA }),
     ).rejects.toThrow(ConflictException);
 
-    expect(repository.save).not.toHaveBeenCalled();
+    expect(repository.save.mock.calls).toHaveLength(0);
   });
 
   it('should reject updates for cancelled orders', async () => {
@@ -65,7 +65,7 @@ describe('OrdersService', () => {
       service.update(1, { descricao: 'Nova descricao' }),
     ).rejects.toThrow(ConflictException);
 
-    expect(repository.save).not.toHaveBeenCalled();
+    expect(repository.save.mock.calls).toHaveLength(0);
   });
 
   it('should create an order with formatted estimated value', async () => {
@@ -83,7 +83,7 @@ describe('OrdersService', () => {
       status: OrderStatus.EM_ANDAMENTO,
     });
 
-    expect(repository.create).toHaveBeenCalledWith({
+    expect(repository.create.mock.calls[0]?.[0]).toEqual({
       cliente: 'Cliente Novo',
       descricao: 'Troca de bateria',
       valor_estimado: '150.50',
@@ -107,7 +107,7 @@ describe('OrdersService', () => {
       status: OrderStatus.CONCLUIDA,
     });
 
-    expect(repository.save).toHaveBeenCalledWith({
+    expect(repository.save.mock.calls[0]?.[0]).toEqual({
       ...order,
       status: OrderStatus.CONCLUIDA,
     });
@@ -139,7 +139,7 @@ describe('OrdersService', () => {
       valor_estimado: 250.75,
     });
 
-    expect(repository.save).toHaveBeenCalledWith({
+    expect(repository.save.mock.calls[0]?.[0]).toEqual({
       ...order,
       cliente: 'Cliente Atualizado',
       descricao: 'Descricao Atualizada',
@@ -161,7 +161,7 @@ describe('OrdersService', () => {
 
     const result = await service.findAll();
 
-    expect(repository.findAll).toHaveBeenCalled();
+    expect(repository.findAll.mock.calls).toHaveLength(1);
     expect(result).toEqual(orders);
   });
 
@@ -174,7 +174,7 @@ describe('OrdersService', () => {
 
     const result = await service.findById(3);
 
-    expect(repository.findById).toHaveBeenCalledWith(3);
+    expect(repository.findById.mock.calls[0]).toEqual([3]);
     expect(result).toEqual(order);
   });
 
@@ -189,6 +189,6 @@ describe('OrdersService', () => {
       service.updateStatus(1, { status: OrderStatus.EM_ANDAMENTO }),
     ).rejects.toThrow(ConflictException);
 
-    expect(repository.save).not.toHaveBeenCalled();
+    expect(repository.save.mock.calls).toHaveLength(0);
   });
 });

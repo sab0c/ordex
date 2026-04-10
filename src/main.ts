@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -32,6 +33,16 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableShutdownHooks();
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Ordex API')
+    .setDescription('API REST para gerenciamento de ordens de serviço.')
+    .setVersion('1.0.0')
+    .addBearerAuth()
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+
+  SwaggerModule.setup('docs', app, swaggerDocument);
 
   await app.listen(port, '0.0.0.0');
 }
