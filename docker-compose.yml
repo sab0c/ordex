@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     command: sh -c "npm run migration:run && npm run start:prod"
     depends_on:
