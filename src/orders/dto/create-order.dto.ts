@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 import { trimStringTransform } from '../../common/transforms/trim-string.transform';
 import { OrderStatus } from '../enums/order-status.enum';
@@ -38,6 +39,7 @@ export class CreateOrderDto {
     { maxDecimalPlaces: 2 },
     { message: 'O campo valor_estimado deve ser um numero valido.' },
   )
+  @Min(0, { message: 'O campo valor_estimado não pode ser negativo.' })
   valor_estimado!: number;
 
   @ApiPropertyOptional({

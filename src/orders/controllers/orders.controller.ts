@@ -9,9 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiConflictResponse,
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -62,6 +64,7 @@ export class OrdersController {
     description: 'Ordem encontrada com sucesso.',
     type: Order,
   })
+  @ApiNotFoundResponse({ description: 'Ordem de serviço não encontrada.' })
   @ApiUnauthorizedResponse({ description: 'Token JWT ausente ou inválido.' })
   async findById(@Param('id', ParseIntPipe) id: number): Promise<Order> {
     return this.ordersService.findById(id);
@@ -75,6 +78,10 @@ export class OrdersController {
     status: 200,
     description: 'Ordem atualizada com sucesso.',
     type: Order,
+  })
+  @ApiNotFoundResponse({ description: 'Ordem de serviço não encontrada.' })
+  @ApiConflictResponse({
+    description: 'A ordem não pode ser alterada no estado atual.',
   })
   @ApiUnauthorizedResponse({ description: 'Token JWT ausente ou inválido.' })
   async update(
@@ -92,6 +99,10 @@ export class OrdersController {
     status: 200,
     description: 'Status atualizado com sucesso.',
     type: Order,
+  })
+  @ApiNotFoundResponse({ description: 'Ordem de serviço não encontrada.' })
+  @ApiConflictResponse({
+    description: 'A transição de status não é permitida para a ordem.',
   })
   @ApiUnauthorizedResponse({ description: 'Token JWT ausente ou inválido.' })
   async updateStatus(

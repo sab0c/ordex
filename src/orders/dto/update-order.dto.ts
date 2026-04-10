@@ -1,6 +1,12 @@
 import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { trimStringTransform } from '../../common/transforms/trim-string.transform';
 
 export class UpdateOrderDto {
@@ -34,5 +40,6 @@ export class UpdateOrderDto {
     { maxDecimalPlaces: 2 },
     { message: 'O campo valor_estimado deve ser um numero valido.' },
   )
+  @Min(0, { message: 'O campo valor_estimado não pode ser negativo.' })
   valor_estimado?: number;
 }

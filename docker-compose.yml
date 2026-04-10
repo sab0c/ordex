@@ -16,8 +16,8 @@ services:
       THROTTLE_LIMIT: 60
       JWT_SECRET: docker-secret-change-me
       JWT_EXPIRES_IN: 1h
-      AUTH_USERNAME: admin
-      AUTH_PASSWORD: admin
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin
     ports:
       - '3000:3000'
 
@@ -33,7 +33,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

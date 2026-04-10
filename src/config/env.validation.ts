@@ -7,8 +7,8 @@ type EnvVariables = {
   THROTTLE_LIMIT?: string;
   JWT_SECRET?: string;
   JWT_EXPIRES_IN?: string;
-  AUTH_USERNAME?: string;
-  AUTH_PASSWORD?: string;
+  ADMIN_USERNAME?: string;
+  ADMIN_PASSWORD?: string;
 };
 
 function ensureBoolean(value: string | undefined, key: string): void {
@@ -45,8 +45,8 @@ export function validateEnv(config: EnvVariables): EnvVariables {
   ensureRequired(config.PORT, 'PORT');
   ensureRequired(config.DATABASE_URL, 'DATABASE_URL');
   ensureRequired(config.JWT_SECRET, 'JWT_SECRET');
-  ensureRequired(config.AUTH_USERNAME, 'AUTH_USERNAME');
-  ensureRequired(config.AUTH_PASSWORD, 'AUTH_PASSWORD');
+  ensureRequired(config.ADMIN_USERNAME, 'ADMIN_USERNAME');
+  ensureRequired(config.ADMIN_PASSWORD, 'ADMIN_PASSWORD');
 
   ensureRequired(config.JWT_EXPIRES_IN, 'JWT_EXPIRES_IN');
   ensureBoolean(config.DB_SYNCHRONIZE, 'DB_SYNCHRONIZE');

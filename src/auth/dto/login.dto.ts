@@ -6,7 +6,7 @@ import { trimStringTransform } from '../../common/transforms/trim-string.transfo
 export class LoginDto {
   @ApiProperty({
     example: 'admin',
-    description: 'Usuário configurado para autenticação simples.',
+    description: 'Username do admin semeado no banco.',
   })
   @IsString({ message: 'O campo username deve ser um texto.' })
   @IsNotEmpty({ message: 'O campo username é obrigatório.' })
@@ -15,7 +15,7 @@ export class LoginDto {
 
   @ApiProperty({
     example: 'strong-password',
-    description: 'Senha configurada para autenticação simples.',
+    description: 'Senha do admin semeado no banco.',
   })
   @IsString({ message: 'O campo password deve ser um texto.' })
   @IsNotEmpty({ message: 'O campo password é obrigatório.' })
