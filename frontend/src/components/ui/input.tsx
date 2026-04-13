@@ -12,7 +12,7 @@ export function Input({ className, error, id, label, ...props }: InputProps) {
       <input
         id={id}
         className={cn(
-          "themed-input h-12 rounded-2xl border border-input-border bg-input-surface px-4 text-sm text-foreground shadow-[0_8px_20px_rgba(18,112,77,0.04),inset_0_1px_0_rgba(255,255,255,0.45)] outline-none backdrop-blur-md transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring",
+          "themed-input h-12 rounded-2xl border border-transparent bg-input-surface px-4 text-sm text-foreground outline-none backdrop-blur-md transition-[border-color,box-shadow,background-color] placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring",
           error && "border-danger focus:border-danger focus:ring-danger/30",
           className,
         )}

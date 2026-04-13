@@ -51,7 +51,7 @@ async function parseError(response: Response): Promise<never> {
     ? errorBody.message.join(", ")
     : errorBody?.message;
 
-  throw new Error(message || "Nao foi possivel concluir a solicitacao.");
+  throw new Error(message || "Não foi possível concluir a solicitação.");
 }
 
 export async function loginRequest(

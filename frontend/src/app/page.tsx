@@ -46,7 +46,7 @@ export default function Home() {
                   key={item}
                   className="feature-card rounded-3xl p-5"
                 >
-                  <div className="mb-4 h-2 w-14 rounded-full bg-primary shadow-[0_0_24px_rgba(61,214,160,0.35)]" />
+                  <div className="feature-card__accent-bar mb-4 h-2 w-14 rounded-full bg-primary" />
                   <p className="text-sm leading-6 text-muted-foreground">{item}</p>
                 </article>
               ))}

@@ -17,11 +17,38 @@ type ThemeContextValue = {
 };
 
 const STORAGE_KEY = "ordex-theme";
+const THEME_ICON_ATTRIBUTE = "data-ordex-theme-icon";
+
+function getThemeIconHref(theme: Theme): string {
+  return theme === "light" ? "/icons/icon-light.svg" : "/icons/icon-dark.svg";
+}
+
+function syncThemeIcon(theme: Theme): void {
+  const href = getThemeIconHref(theme);
+  const linkRels = ["icon", "shortcut icon"];
+
+  linkRels.forEach((rel) => {
+    let link = document.head.querySelector<HTMLLinkElement>(
+      `link[${THEME_ICON_ATTRIBUTE}="${rel}"]`,
+    );
+
+    if (!link) {
+      link = document.createElement("link");
+      link.setAttribute(THEME_ICON_ATTRIBUTE, rel);
+      link.rel = rel;
+      link.type = "image/svg+xml";
+      document.head.appendChild(link);
+    }
+
+    link.href = href;
+  });
+}
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
+  syncThemeIcon(theme);
 }
 
 export function ThemeProvider({

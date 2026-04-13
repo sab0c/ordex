@@ -1,14 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getStoredAccessToken } from "@/lib/auth";
+import { useEffect, useSyncExternalStore } from "react";
+import { getStoredAccessToken, subscribeToAuthChange } from "@/lib/auth";
 
 type AuthMode = "authenticated" | "guest";
 
+function getServerSnapshot(): string | null {
+  return null;
+}
+
 export function useAuthRedirect(mode: AuthMode) {
   const router = useRouter();
-  const [token] = useState<string | null>(() => getStoredAccessToken());
+  const token = useSyncExternalStore(
+    subscribeToAuthChange,
+    getStoredAccessToken,
+    getServerSnapshot,
+  );
 
   useEffect(() => {
     const isAuthenticated = Boolean(token);
@@ -24,8 +32,7 @@ export function useAuthRedirect(mode: AuthMode) {
   }, [mode, router, token]);
 
   return {
-    isReady:
-      mode === "authenticated" ? token !== null : token === null,
+    isReady: mode === "authenticated" ? token !== null : token === null,
     token,
   };
 }

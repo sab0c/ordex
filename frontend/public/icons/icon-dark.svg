@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="18" fill="#0D241D" />
+  <rect
+    x="1"
+    y="1"
+    width="62"
+    height="62"
+    rx="17"
+    stroke="#6EE7B729"
+    fill="url(#panel)"
+  />
+  <circle cx="32" cy="32" r="14" fill="#3DD6A01F" />
+  <circle cx="32" cy="32" r="8" fill="#43DCA7" />
+  <ellipse
+    cx="32"
+    cy="32"
+    rx="21"
+    ry="11"
+    transform="rotate(-28 32 32)"
+    stroke="#E2FFF5B8"
+    stroke-width="2.2"
+    stroke-linecap="round"
+  />
+  <ellipse
+    cx="32"
+    cy="32"
+    rx="17"
+    ry="8.5"
+    transform="rotate(24 32 32)"
+    stroke="#3DD6A07A"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <circle cx="46" cy="18" r="3.2" fill="#EAFFF7" />
+  <defs>
+    <linearGradient id="panel" x1="32" y1="1" x2="32" y2="63" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF0F" />
+      <stop offset="1" stop-color="#FFFFFF03" />
+    </linearGradient>
+  </defs>
+</svg>

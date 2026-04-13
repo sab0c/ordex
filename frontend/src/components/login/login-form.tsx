@@ -27,7 +27,7 @@ export function LoginForm() {
     const nextErrors: FormErrors = {};
 
     if (username.trim().length === 0) {
-      nextErrors.username = "Informe o username.";
+      nextErrors.username = "Informe o usuário ou e-mail.";
     }
 
     if (password.trim().length === 0) {
@@ -55,7 +55,7 @@ export function LoginForm() {
         form:
           error instanceof Error
             ? error.message
-            : "Nao foi possivel realizar o login.",
+            : "Não foi possível realizar o login.",
       });
     } finally {
       setIsLoading(false);
@@ -81,8 +81,8 @@ export function LoginForm() {
             autoComplete="username"
             error={errors.username}
             id="username"
-            label="Usuário ou email"
-            placeholder="Digite seu usuário ou email"
+            label="Usuário ou e-mail"
+            placeholder="Digite seu usuário ou e-mail"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
           />
