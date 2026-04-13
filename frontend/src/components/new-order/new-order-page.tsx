@@ -26,7 +26,6 @@ export function NewOrderPage() {
         errors={errors}
         isOpen={isStatusOpen}
         isSubmitting={isSubmitting}
-        pageDescription="Cadastre uma nova ordem de serviço com os dados iniciais da operação."
         pageTitle="Nova Ordem"
         resetLabel="Limpar"
         statusLabel="Status inicial"

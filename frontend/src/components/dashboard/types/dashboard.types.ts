@@ -1,4 +1,4 @@
-import type { DashboardMetricsResponse } from "@/lib/api";
+import type { DashboardMetricsResponse, OrderStatus } from "@/lib/api";
 
 export type DashboardMetrics = DashboardMetricsResponse;
 
@@ -13,6 +13,7 @@ export type DashboardStatusCard = {
   accent: string;
   helper: string;
   label: string;
+  status: OrderStatus;
   value: number;
 };
 
