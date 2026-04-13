@@ -69,7 +69,7 @@ export function DashboardPage() {
           getOrdersRequest(token, { page: 1, limit: 1, status: "Cancelada" }),
           getOrdersRequest(token, {
             page: 1,
-            limit: 5,
+            limit: 10,
             sort_by: "data_criacao",
             sort_order: "desc",
           }),
