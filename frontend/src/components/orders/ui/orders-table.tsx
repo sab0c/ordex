@@ -15,6 +15,14 @@ export function OrdersTable({
   orders,
   total,
 }: Readonly<OrdersTableProps>) {
+  function SkeletonCell({
+    className,
+  }: Readonly<{
+    className: string;
+  }>) {
+    return <div className={`animate-pulse rounded-full bg-surface-elevated/60 ${className}`} />;
+  }
+
   return (
     <>
       <div className="flex items-center justify-between gap-3 px-6 py-5">
@@ -54,8 +62,31 @@ export function OrdersTable({
                     key={`orders-skeleton-${index + 1}`}
                     className="border-b border-border/70 last:border-b-0"
                   >
-                    <td className="px-6 py-4" colSpan={6}>
-                      <div className="h-10 animate-pulse rounded-2xl bg-surface-elevated/60" />
+                    <td className="px-6 py-4">
+                      <SkeletonCell className="h-5 w-16" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <SkeletonCell className="h-5 w-28" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <SkeletonCell className="h-4 w-full rounded-2xl" />
+                        <SkeletonCell className="h-4 w-4/5 rounded-2xl" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <SkeletonCell className="h-8 w-28 rounded-2xl" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <SkeletonCell className="h-4 w-20" />
+                        <SkeletonCell className="h-4 w-16" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end">
+                        <SkeletonCell className="h-5 w-24" />
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -68,8 +68,46 @@ export type GetOrdersParams = {
   sort_order?: SortOrder;
 };
 
+const ORDERS_REQUEST_DEDUP_TTL_MS = 3000;
+const inFlightOrdersRequests = new Map<string, Promise<OrdersResponse>>();
+const cachedOrdersResponses = new Map<
+  string,
+  { expiresAt: number; response: OrdersResponse }
+>();
+
 function getApiUrl(): string {
   return process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_API_URL;
+}
+
+function buildOrdersRequestKey(token: string, url: string): string {
+  return `${token}:${url}`;
+}
+
+function readCachedOrdersResponse(key: string): OrdersResponse | null {
+  const cachedEntry = cachedOrdersResponses.get(key);
+
+  if (!cachedEntry) {
+    return null;
+  }
+
+  if (cachedEntry.expiresAt < Date.now()) {
+    cachedOrdersResponses.delete(key);
+    return null;
+  }
+
+  return cachedEntry.response;
+}
+
+function writeCachedOrdersResponse(key: string, response: OrdersResponse): void {
+  cachedOrdersResponses.set(key, {
+    expiresAt: Date.now() + ORDERS_REQUEST_DEDUP_TTL_MS,
+    response,
+  });
+}
+
+function clearOrdersRequestCaches(): void {
+  inFlightOrdersRequests.clear();
+  cachedOrdersResponses.clear();
 }
 
 async function parseError(response: Response): Promise<never> {
@@ -119,19 +157,43 @@ export async function getOrdersRequest(
   const url = `${getApiUrl()}/orders${
     searchParams.size > 0 ? `?${searchParams.toString()}` : ""
   }`;
+  const requestKey = buildOrdersRequestKey(token, url);
+  const cachedResponse = readCachedOrdersResponse(requestKey);
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    await parseError(response);
+  if (cachedResponse) {
+    return cachedResponse;
   }
 
-  return (await response.json()) as OrdersResponse;
+  const inFlightRequest = inFlightOrdersRequests.get(requestKey);
+
+  if (inFlightRequest) {
+    return inFlightRequest;
+  }
+
+  const requestPromise = (async () => {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      await parseError(response);
+    }
+
+    const parsedResponse = (await response.json()) as OrdersResponse;
+    writeCachedOrdersResponse(requestKey, parsedResponse);
+    return parsedResponse;
+  })();
+
+  inFlightOrdersRequests.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    inFlightOrdersRequests.delete(requestKey);
+  }
 }
 
 export async function createOrderRequest(
@@ -150,6 +212,8 @@ export async function createOrderRequest(
   if (!response.ok) {
     await parseError(response);
   }
+
+  clearOrdersRequestCaches();
 
   return (await response.json()) as Order;
 }
