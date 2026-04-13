@@ -1,5 +1,7 @@
+import Link from "next/link";
 import type { Order } from "@/lib/api";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { appRoutes } from "@/lib/routes";
 import { formatOrderCurrency, formatOrderDate } from "../utils/orders-format";
 
 type OrdersTableProps = {
@@ -49,7 +51,7 @@ export function OrdersTable({
                 <th className="w-48 px-6 py-4">Cliente</th>
                 <th className="px-6 py-4">Descrição</th>
                 <th className="w-44 px-6 py-4">Status</th>
-                <th className="w-44 px-6 py-4">Criação</th>
+                <th className="w-44 px-6 py-4">Atualização</th>
                 <th className="w-48 px-6 py-4 text-right whitespace-nowrap">
                   Valor estimado
                 </th>
@@ -92,14 +94,21 @@ export function OrdersTable({
                 ))
               ) : orders.length > 0 ? (
                 orders.map((order) => {
-                  const createdAt = formatOrderDate(order.data_criacao);
+                  const updatedAt = formatOrderDate(order.data_atualizacao);
 
                   return (
                     <tr
                       key={order.id}
                       className="border-b border-border/70 text-sm text-foreground last:border-b-0"
                     >
-                      <td className="px-6 py-4 font-semibold text-primary">#{order.id}</td>
+                      <td className="px-6 py-4 font-semibold text-primary">
+                        <Link
+                          className="transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                          href={appRoutes.orderEdit(order.id)}
+                        >
+                          #{order.id}
+                        </Link>
+                      </td>
                       <td className="px-6 py-4">{order.cliente}</td>
                       <td className="max-w-[20rem] px-6 py-4 text-muted-foreground xl:max-w-[24rem]">
                         <div className="group relative">
@@ -118,8 +127,8 @@ export function OrdersTable({
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
                         <div className="flex flex-col leading-relaxed">
-                          <span>{createdAt.date}</span>
-                          <span>{createdAt.time}</span>
+                          <span>{updatedAt.date}</span>
+                          <span>{updatedAt.time}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right font-medium text-foreground">

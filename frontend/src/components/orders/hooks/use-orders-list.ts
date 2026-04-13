@@ -13,6 +13,18 @@ import type { OrdersQueryState } from "../types/orders-filters.types";
 const ORDERS_CACHE_KEY_PREFIX = "ordex-orders-list";
 const ORDERS_RETRY_DELAYS_MS = [500, 1000, 2000, 4000];
 
+export function clearOrdersListCache(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  Object.keys(window.sessionStorage)
+    .filter((key) => key.startsWith(ORDERS_CACHE_KEY_PREFIX))
+    .forEach((key) => {
+      window.sessionStorage.removeItem(key);
+    });
+}
+
 type OrdersListCacheEntry = {
   orders: Order[];
   total: number;
@@ -37,7 +49,7 @@ function readOrdersCache(cacheKey: string): OrdersListCacheEntry | null {
   try {
     return JSON.parse(rawValue) as OrdersListCacheEntry;
   } catch {
-    window.sessionStorage.removeItem(cacheKey);
+    clearOrdersListCache();
     return null;
   }
 }

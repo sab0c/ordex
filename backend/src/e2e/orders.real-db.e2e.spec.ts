@@ -8,17 +8,8 @@ import {
 } from './helpers/create-order-through-http';
 import { createRealDbTestApp } from './support/create-real-db-test-app';
 import { CreateOrderDto } from '../orders/dto/create-order.dto';
+import { OrdersMetricsResponseDto } from '../orders/dto/orders-metrics-response.dto';
 import { OrderStatus } from '../orders/enums/order-status.enum';
-
-type MetricsResponse = {
-  totalOrders: number;
-  openOrders: number;
-  inProgressOrders: number;
-  concludedOrders: number;
-  cancelledOrders: number;
-  totalEstimatedValue: number;
-  recentOrdersLastThreeDays: number;
-};
 
 describe('Orders Real DB E2E', () => {
   let app: INestApplication;
@@ -84,7 +75,7 @@ describe('Orders Real DB E2E', () => {
       .set({ Authorization: `Bearer ${token}` })
       .expect(200);
 
-    expect(metricsResponse.body as MetricsResponse).toMatchObject({
+    expect(metricsResponse.body as OrdersMetricsResponseDto).toMatchObject({
       totalOrders: 3,
       openOrders: 1,
       inProgressOrders: 1,

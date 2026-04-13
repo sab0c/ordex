@@ -12,6 +12,8 @@ export type CreateOrderPayload = {
   status?: OrderStatus;
 };
 
+export type UpdateOrderPayload = CreateOrderPayload;
+
 export type LoginSuccessResponse = {
   access_token: string;
 };
@@ -93,11 +95,26 @@ export async function getDashboardMetricsRequest(
   return httpApiClient.getDashboardMetrics(token);
 }
 
+export async function getOrderRequest(
+  token: string,
+  orderId: number,
+): Promise<Order> {
+  return httpApiClient.getOrder(token, orderId);
+}
+
 export async function createOrderRequest(
   token: string,
   payload: CreateOrderPayload,
 ): Promise<Order> {
   return httpApiClient.createOrder(token, payload);
+}
+
+export async function updateOrderRequest(
+  token: string,
+  orderId: number,
+  payload: UpdateOrderPayload,
+): Promise<Order> {
+  return httpApiClient.updateOrder(token, orderId, payload);
 }
 
 function getApiMode(): "mock" | "real" {

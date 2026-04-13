@@ -3,41 +3,20 @@
 import { useMemo, useState } from "react";
 import { createOrderRequest } from "@/lib/api";
 import type { OrderStatus } from "@/lib/api";
+import { clearDashboardMetricsCache } from "@/components/dashboard/hooks/use-dashboard-metrics";
+import { clearOrdersListCache } from "@/components/orders/hooks/use-orders-list";
 import type {
   NewOrderFormErrors,
   NewOrderFormValues,
 } from "../types/new-order.types";
 import { formatCurrencyInput, parseCurrencyInput } from "../utils/new-order-format";
-
-const initialFormValues: NewOrderFormValues = {
-  cliente: "",
-  descricao: "",
-  valorEstimado: "",
-  status: "Aberta",
-};
-
-function validateForm(values: NewOrderFormValues): NewOrderFormErrors {
-  const errors: NewOrderFormErrors = {};
-
-  if (values.cliente.trim().length === 0) {
-    errors.cliente = "Informe o nome do cliente.";
-  }
-
-  if (values.descricao.trim().length === 0) {
-    errors.descricao = "Descreva o serviço solicitado.";
-  }
-
-  if (values.valorEstimado.trim().length === 0) {
-    errors.valorEstimado = "Informe o valor estimado.";
-  } else if (parseCurrencyInput(values.valorEstimado) < 0) {
-    errors.valorEstimado = "O valor estimado não pode ser negativo.";
-  }
-
-  return errors;
-}
+import {
+  initialOrderFormValues,
+  validateOrderForm,
+} from "../utils/order-form";
 
 export function useNewOrderForm(token: string | null) {
-  const [values, setValues] = useState<NewOrderFormValues>(initialFormValues);
+  const [values, setValues] = useState<NewOrderFormValues>(initialOrderFormValues);
   const [errors, setErrors] = useState<NewOrderFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
@@ -82,7 +61,7 @@ export function useNewOrderForm(token: string | null) {
   }
 
   function handleReset() {
-    setValues(initialFormValues);
+    setValues(initialOrderFormValues);
     setErrors({});
     setCreatedOrderId(null);
   }
@@ -97,7 +76,7 @@ export function useNewOrderForm(token: string | null) {
       return;
     }
 
-    const nextErrors = validateForm(values);
+    const nextErrors = validateOrderForm(values);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -115,8 +94,10 @@ export function useNewOrderForm(token: string | null) {
         status: values.status,
       });
 
+      clearOrdersListCache();
+      clearDashboardMetricsCache();
       setCreatedOrderId(createdOrder.id);
-      setValues(initialFormValues);
+      setValues(initialOrderFormValues);
     } catch (error) {
       setErrors({
         form:

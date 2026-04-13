@@ -1,12 +1,6 @@
-export type DashboardMetrics = {
-  totalOrders: number;
-  openOrders: number;
-  inProgressOrders: number;
-  concludedOrders: number;
-  cancelledOrders: number;
-  totalEstimatedValue: number;
-  recentOrdersLastThreeDays: number;
-};
+import type { DashboardMetricsResponse } from "@/lib/api";
+
+export type DashboardMetrics = DashboardMetricsResponse;
 
 export type DashboardStatusMetricKey =
   | "openOrders"

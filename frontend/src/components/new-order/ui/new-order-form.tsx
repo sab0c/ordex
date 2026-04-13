@@ -13,10 +13,18 @@ import type {
 } from "../types/new-order.types";
 
 type NewOrderFormProps = {
-  createdOrderId: number | null;
   errors: NewOrderFormErrors;
   isOpen: boolean;
   isSubmitting: boolean;
+  isSubmitDisabled?: boolean;
+  pageDescription?: string;
+  pageTitle: string;
+  resetLabel: string;
+  statusLabel: string;
+  submitLabel: string;
+  submitLoadingLabel: string;
+  successOrderId: number | null;
+  successMessage: string;
   values: NewOrderFormValues;
   onClienteChange: (value: string) => void;
   onDescricaoChange: (value: string) => void;
@@ -27,11 +35,19 @@ type NewOrderFormProps = {
   onValorEstimadoChange: (value: string) => void;
 };
 
-export function NewOrderForm({
-  createdOrderId,
+export function OrderFormCard({
   errors,
   isOpen,
   isSubmitting,
+  isSubmitDisabled = false,
+  pageDescription,
+  pageTitle,
+  resetLabel,
+  statusLabel,
+  submitLabel,
+  submitLoadingLabel,
+  successOrderId,
+  successMessage,
   values,
   onClienteChange,
   onDescricaoChange,
@@ -44,15 +60,15 @@ export function NewOrderForm({
   return (
     <Card className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">Nova Ordem</h1>
-        <p className="text-sm text-muted-foreground">
-          Cadastre uma nova ordem de serviço com os dados iniciais da operação.
-        </p>
+        <h1 className="text-2xl font-semibold text-foreground">{pageTitle}</h1>
+        {pageDescription ? (
+          <p className="text-sm text-muted-foreground">{pageDescription}</p>
+        ) : null}
       </div>
 
-      {createdOrderId ? (
+      {successOrderId ? (
         <div className="rounded-3xl border border-primary/20 bg-primary/10 px-4 py-4 text-sm text-foreground">
-          Ordem <span className="font-semibold">#{createdOrderId}</span> criada com sucesso.
+          {successMessage} <span className="font-semibold">#{successOrderId}</span>.
         </div>
       ) : null}
 
@@ -74,10 +90,11 @@ export function NewOrderForm({
           />
 
           <FilterSelect
+            error={errors.status}
             id="new-order-status"
             allowEmpty={false}
             isOpen={isOpen}
-            label="Status inicial"
+            label={statusLabel}
             options={initialStatusOptions}
             value={values.status}
             onChange={(value) => onStatusChange(value as OrderStatus)}
@@ -112,15 +129,15 @@ export function NewOrderForm({
             variant="secondary"
             onClick={onReset}
           >
-            Limpar
+            {resetLabel}
           </Button>
 
           <Button
             className="h-12 rounded-[1.6rem] px-6"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSubmitDisabled}
             type="submit"
           >
-            {isSubmitting ? "Criando..." : "Criar ordem"}
+            {isSubmitting ? submitLoadingLabel : submitLabel}
           </Button>
         </div>
       </form>

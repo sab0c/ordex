@@ -5,6 +5,14 @@ import type { DashboardMetrics } from "../types/dashboard.types";
 const DASHBOARD_METRICS_CACHE_KEY = "ordex-dashboard-metrics";
 const DASHBOARD_RETRY_DELAYS_MS = [800, 1600, 3200, 6400];
 
+export function clearDashboardMetricsCache(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.removeItem(DASHBOARD_METRICS_CACHE_KEY);
+}
+
 function readDashboardMetricsCache(): DashboardMetrics | null {
   if (typeof window === "undefined") {
     return null;
@@ -19,7 +27,7 @@ function readDashboardMetricsCache(): DashboardMetrics | null {
   try {
     return JSON.parse(rawValue) as DashboardMetrics;
   } catch {
-    window.sessionStorage.removeItem(DASHBOARD_METRICS_CACHE_KEY);
+    clearDashboardMetricsCache();
     return null;
   }
 }

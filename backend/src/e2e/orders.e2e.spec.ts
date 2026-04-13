@@ -7,22 +7,15 @@ import { UpdateOrderDto } from '../orders/dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../orders/dto/update-order-status.dto';
 import { OrderStatus } from '../orders/enums/order-status.enum';
 import { createAndAuthenticateAdmin } from './helpers/create-and-authenticate-admin';
+import { OrderHttpResponse } from './helpers/create-order-through-http';
 import { createTestApp } from './support/create-test-app';
 
 type LoginResponse = {
   access_token: string;
 };
 
-type OrderResponse = {
-  id: number;
-  cliente: string;
-  descricao: string;
-  valor_estimado: string;
-  status: OrderStatus;
-};
-
 type ListOrdersResponse = {
-  data: OrderResponse[];
+  data: OrderHttpResponse[];
   pagination: {
     page: number;
     limit: number;
@@ -188,7 +181,7 @@ describe('Orders E2E', () => {
       } satisfies CreateOrderDto)
       .expect(201);
 
-    const createdOrder = createResponse.body as OrderResponse;
+    const createdOrder = createResponse.body as OrderHttpResponse;
 
     await request(getHttpServer())
       .patch(`/orders/${createdOrder.id}/status`)
@@ -206,7 +199,7 @@ describe('Orders E2E', () => {
       } satisfies UpdateOrderStatusDto)
       .expect(200);
 
-    expect((inProgressResponse.body as OrderResponse).status).toBe(
+    expect((inProgressResponse.body as OrderHttpResponse).status).toBe(
       OrderStatus.EM_ANDAMENTO,
     );
   });
@@ -226,7 +219,7 @@ describe('Orders E2E', () => {
       } satisfies CreateOrderDto)
       .expect(201);
 
-    const createdOrder = createResponse.body as OrderResponse;
+    const createdOrder = createResponse.body as OrderHttpResponse;
 
     const updateResponse = await request(getHttpServer())
       .patch(`/orders/${createdOrder.id}`)
@@ -237,7 +230,7 @@ describe('Orders E2E', () => {
       } satisfies UpdateOrderDto)
       .expect(200);
 
-    const updatedOrder = updateResponse.body as OrderResponse;
+    const updatedOrder = updateResponse.body as OrderHttpResponse;
 
     expect(updatedOrder.descricao).toBe('Depois');
     expect(updatedOrder.valor_estimado).toBe('120.50');

@@ -2,23 +2,38 @@
 
 import { useState } from "react";
 import { useAuthenticatedSession } from "@/contexts/authenticated-session-context";
-import { useNewOrderForm } from "./hooks/use-new-order-form";
-import { OrderFormCard } from "./ui/new-order-form";
+import { OrderFormCard } from "@/components/new-order/ui/new-order-form";
+import { useEditOrderForm } from "./hooks/use-edit-order-form";
+import { EditOrderFormSkeleton } from "./ui/edit-order-form-skeleton";
 
-export function NewOrderPage() {
-  const { token } = useAuthenticatedSession();
+type EditOrderPageProps = {
+  orderId: number;
+};
+
+export function EditOrderPage({ orderId }: Readonly<EditOrderPageProps>) {
+  const { isReady, token } = useAuthenticatedSession();
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const {
-    createdOrderId,
     errors,
     handleCurrencyChange,
     handleReset,
     handleStatusChange,
     handleSubmit,
+    isLoadingOrder,
     isSubmitting,
+    isSubmitDisabled,
     setFieldValue,
+    updatedOrderId,
     values,
-  } = useNewOrderForm(token);
+  } = useEditOrderForm({
+    isReady,
+    orderId,
+    token,
+  });
+
+  if (isLoadingOrder) {
+    return <EditOrderFormSkeleton />;
+  }
 
   return (
     <div className="w-full">
@@ -26,14 +41,14 @@ export function NewOrderPage() {
         errors={errors}
         isOpen={isStatusOpen}
         isSubmitting={isSubmitting}
-        pageDescription="Cadastre uma nova ordem de serviço com os dados iniciais da operação."
-        pageTitle="Nova Ordem"
-        resetLabel="Limpar"
-        statusLabel="Status inicial"
-        submitLabel="Criar ordem"
-        submitLoadingLabel="Criando..."
-        successOrderId={createdOrderId}
-        successMessage="Ordem criada com sucesso"
+        isSubmitDisabled={isSubmitDisabled}
+        pageTitle={`Editar Ordem #${orderId}`}
+        resetLabel="Restaurar dados"
+        statusLabel="Status"
+        submitLabel="Salvar alterações"
+        submitLoadingLabel="Salvando..."
+        successOrderId={updatedOrderId}
+        successMessage="Ordem atualizada com sucesso"
         values={values}
         onClienteChange={(value) => setFieldValue("cliente", value)}
         onDescricaoChange={(value) => setFieldValue("descricao", value)}

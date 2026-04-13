@@ -30,6 +30,17 @@ function readBearerToken(request: Request): string {
   return authorizationHeader.replace(/^Bearer\s+/i, "").trim();
 }
 
+function notFoundResponse(): HttpResponse<ApiErrorBody> {
+  return HttpResponse.json(
+    { message: "Ordem de serviço não encontrada." },
+    { status: 404 },
+  );
+}
+
+function badRequestResponse(message: string): HttpResponse<ApiErrorBody> {
+  return HttpResponse.json({ message }, { status: 400 });
+}
+
 export const handlers = [
   http.post("*/mock-api/auth/login", async ({ request }) => {
     await delay(MOCK_NETWORK_DELAY_MS);
@@ -108,6 +119,25 @@ export const handlers = [
     return HttpResponse.json(paginateOrders(filteredOrders, params));
   }),
 
+  http.get("*/mock-api/orders/:id", async ({ request, params }) => {
+    await delay(MOCK_NETWORK_DELAY_MS);
+
+    const token = readBearerToken(request);
+
+    if (!isValidMockToken(token)) {
+      return unauthorizedResponse();
+    }
+
+    const orderId = Number(params.id);
+    const order = (await readStoredOrders()).find((item) => item.id === orderId);
+
+    if (!order) {
+      return notFoundResponse();
+    }
+
+    return HttpResponse.json(order);
+  }),
+
   http.post("*/mock-api/orders", async ({ request }) => {
     await delay(MOCK_NETWORK_DELAY_MS);
 
@@ -130,5 +160,59 @@ export const handlers = [
     await writeStoredOrders([nextOrder, ...currentOrders]);
 
     return HttpResponse.json(nextOrder, { status: 201 });
+  }),
+
+  http.patch("*/mock-api/orders/:id", async ({ request, params }) => {
+    await delay(MOCK_NETWORK_DELAY_MS);
+
+    const token = readBearerToken(request);
+
+    if (!isValidMockToken(token)) {
+      return unauthorizedResponse();
+    }
+
+    const orderId = Number(params.id);
+    const payload = (await request.json()) as CreateOrderPayload;
+    const currentOrders = await readStoredOrders();
+    const targetOrder = currentOrders.find((order) => order.id === orderId);
+
+    if (!targetOrder) {
+      return notFoundResponse();
+    }
+
+    if (targetOrder.status === "Cancelada") {
+      return badRequestResponse("Ordens canceladas não podem ser alteradas.");
+    }
+
+    if (payload.status === "Concluída" && targetOrder.status !== "Em andamento") {
+      return badRequestResponse(
+        "Uma ordem só pode ser concluída se estiver Em andamento.",
+      );
+    }
+
+    const nextStatus = payload.status ?? targetOrder.status;
+    const hasChanges =
+      targetOrder.cliente !== payload.cliente.trim() ||
+      targetOrder.descricao !== payload.descricao.trim() ||
+      targetOrder.valor_estimado !== payload.valor_estimado.toFixed(2) ||
+      targetOrder.status !== nextStatus;
+    const nextUpdatedAt = hasChanges
+      ? new Date().toISOString()
+      : targetOrder.data_atualizacao;
+
+    const updatedOrder = {
+      ...targetOrder,
+      cliente: payload.cliente.trim(),
+      descricao: payload.descricao.trim(),
+      valor_estimado: payload.valor_estimado.toFixed(2),
+      status: nextStatus,
+      data_atualizacao: nextUpdatedAt,
+    };
+
+    await writeStoredOrders(
+      currentOrders.map((order) => (order.id === orderId ? updatedOrder : order)),
+    );
+
+    return HttpResponse.json(updatedOrder);
   }),
 ];

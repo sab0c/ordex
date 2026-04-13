@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import {
   Field,
   FieldLabel,
+  FieldMessage,
   fieldControlBaseClassName,
   fieldSizeClassNames,
 } from "@/components/ui/field";
@@ -37,6 +38,8 @@ type FilterSelectProps<T extends string> = {
   options: FilterOption<T>[];
   placeholder?: string;
   allowEmpty?: boolean;
+  disabled?: boolean;
+  error?: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   value: "" | T;
@@ -47,6 +50,8 @@ export function FilterSelect<T extends string>({
   id,
   label,
   allowEmpty = true,
+  disabled = false,
+  error,
   isOpen,
   onChange,
   onOpenChange,
@@ -138,17 +143,24 @@ export function FilterSelect<T extends string>({
       <div className="relative z-30" ref={containerRef}>
         <button
           aria-controls={`${id}-listbox`}
+          aria-disabled={disabled}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           className={cn(
             fieldControlBaseClassName,
             fieldSizeClassNames.default,
-            "flex items-center justify-between rounded-[1.6rem] text-left transition-[border-color,box-shadow,background-color,transform] hover:border-primary/40 hover:bg-surface-elevated/80",
+            "flex items-center justify-between rounded-[1.6rem] text-left transition-[border-color,box-shadow,background-color,transform] hover:border-primary/40 hover:bg-surface-elevated/80 disabled:cursor-not-allowed disabled:opacity-60",
+            error && "border-danger focus:border-danger focus:ring-danger/30",
           )}
+          disabled={disabled}
           id={id}
           ref={triggerRef}
           type="button"
-          onClick={() => onOpenChange(!isOpen)}
+          onClick={() => {
+            if (!disabled) {
+              onOpenChange(!isOpen);
+            }
+          }}
         >
           <span className="truncate">{resolvedLabel}</span>
           <span className="ml-3 shrink-0 text-muted-foreground">
@@ -216,6 +228,7 @@ export function FilterSelect<T extends string>({
             )
           : null}
       </div>
+      {error ? <FieldMessage className="text-danger">{error}</FieldMessage> : null}
     </Field>
   );
 }
