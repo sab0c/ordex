@@ -15,7 +15,7 @@ export function StatusBadge({ status }: Readonly<{ status: OrderStatus }>) {
 
   return (
     <span
-      className="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+      className="inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold leading-none"
       style={style}
     >
       {status}

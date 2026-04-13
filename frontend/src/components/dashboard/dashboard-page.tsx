@@ -11,7 +11,6 @@ import {
   type DashboardStatusCard,
 } from "./dashboard-status-grid";
 import { OperationalSummaryCard } from "./operational-summary-card";
-import { RecentOrdersTable } from "./recent-orders-table";
 
 type DashboardMetrics = {
   totalOrders: number;
@@ -21,7 +20,6 @@ type DashboardMetrics = {
   cancelledOrders: number;
   totalEstimatedValue: number;
   recentOrdersLastThreeDays: number;
-  recentOrders: Order[];
 };
 
 function formatCurrency(value: number): string {
@@ -59,7 +57,6 @@ export function DashboardPage() {
           inProgressOrdersResponse,
           concludedOrdersResponse,
           cancelledOrdersResponse,
-          recentOrdersResponse,
           valueOrdersResponse,
         ] = await Promise.all([
           getOrdersRequest(token, { page: 1, limit: 1 }),
@@ -67,12 +64,6 @@ export function DashboardPage() {
           getOrdersRequest(token, { page: 1, limit: 1, status: "Em andamento" }),
           getOrdersRequest(token, { page: 1, limit: 1, status: "Concluída" }),
           getOrdersRequest(token, { page: 1, limit: 1, status: "Cancelada" }),
-          getOrdersRequest(token, {
-            page: 1,
-            limit: 10,
-            sort_by: "data_criacao",
-            sort_order: "desc",
-          }),
           getOrdersRequest(token, {
             page: 1,
             limit: 100,
@@ -102,7 +93,6 @@ export function DashboardPage() {
           cancelledOrders: cancelledOrdersResponse.pagination.total,
           totalEstimatedValue,
           recentOrdersLastThreeDays,
-          recentOrders: recentOrdersResponse.data,
         });
       } catch (requestError) {
         if (!isMounted) {
@@ -201,18 +191,15 @@ export function DashboardPage() {
             totalOrders={metrics.totalOrders}
           />
 
-          <DashboardStatusGrid cards={statusCards} />
+          <OperationalSummaryCard
+            cancelledOrders={metrics.cancelledOrders}
+            concludedOrders={metrics.concludedOrders}
+            inProgressOrders={metrics.inProgressOrders}
+            openOrders={metrics.openOrders}
+            totalOrders={metrics.totalOrders}
+          />
 
-          <section className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-            <RecentOrdersTable orders={metrics.recentOrders} />
-            <OperationalSummaryCard
-              cancelledOrders={metrics.cancelledOrders}
-              concludedOrders={metrics.concludedOrders}
-              inProgressOrders={metrics.inProgressOrders}
-              openOrders={metrics.openOrders}
-              totalOrders={metrics.totalOrders}
-            />
-          </section>
+          <DashboardStatusGrid cards={statusCards} />
         </div>
       ) : null}
     </>

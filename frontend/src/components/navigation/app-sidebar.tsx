@@ -16,10 +16,10 @@ const navigationItems = [
     isAvailable: true,
   },
   {
-    href: "/dashboard/orders",
-    label: "Listar Ordens",
-    description: "Em breve",
-    isAvailable: false,
+    href: "/orders",
+    label: "Ordens",
+    description: "Listagem completa",
+    isAvailable: true,
   },
   {
     href: "/dashboard/new-order",
@@ -74,7 +74,7 @@ function getItemIcon(label: (typeof navigationItems)[number]["label"]) {
     return <DashboardIcon />;
   }
 
-  if (label === "Listar Ordens") {
+  if (label === "Ordens") {
     return <ListIcon />;
   }
 

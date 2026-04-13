@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: string;
+  clearable?: boolean;
+  onClear?: () => void;
 };
 
 function EyeOpenIcon() {
@@ -68,17 +70,54 @@ function EyeClosedIcon() {
   );
 }
 
+function ClearIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 6L18 18"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M18 6L6 18"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 export function Input({
   className,
+  clearable = false,
   error,
   id,
   label,
+  onClear,
   type,
   ...props
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const isPasswordField = type === "password";
   const resolvedType = isPasswordField && isPasswordVisible ? "text" : type;
+  const hasStringValue = typeof props.value === "string" && props.value.length > 0;
+  const showClearButton = clearable && !isPasswordField && hasStringValue;
+
+  function handleClear() {
+    onClear?.();
+    inputRef.current?.focus();
+  }
 
   return (
     <label className="flex w-full flex-col gap-2 text-sm text-foreground" htmlFor={id}>
@@ -86,15 +125,26 @@ export function Input({
       <div className="relative">
         <input
           id={id}
+          ref={inputRef}
           type={resolvedType}
           className={cn(
             "themed-input h-12 w-full rounded-2xl border border-transparent bg-input-surface px-4 text-sm text-foreground outline-none backdrop-blur-md transition-[border-color,box-shadow,background-color] placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring",
-            isPasswordField && "pr-12",
+            (isPasswordField || showClearButton) && "pr-12",
             error && "border-danger focus:border-danger focus:ring-danger/30",
             className,
           )}
           {...props}
         />
+        {showClearButton ? (
+          <button
+            aria-label="Limpar campo"
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            type="button"
+            onClick={handleClear}
+          >
+            <ClearIcon />
+          </button>
+        ) : null}
         {isPasswordField ? (
           <button
             aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}

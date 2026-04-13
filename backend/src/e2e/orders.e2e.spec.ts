@@ -12,6 +12,7 @@ import { LoginDto } from '../auth/dto/login.dto';
 import { AdminUser } from '../auth/entities/admin-user.entity';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
+import { normalizeTextForSearch } from '../common/utils/text-normalization.util';
 import { CreateOrderDto } from '../orders/dto/create-order.dto';
 import { OrderSortBy, SortOrder } from '../orders/dto/list-orders-query.dto';
 import { UpdateOrderDto } from '../orders/dto/update-order.dto';
@@ -56,7 +57,9 @@ class InMemoryOrderRepository implements OrderRepository {
       .filter((order) =>
         filters.cliente === undefined
           ? true
-          : order.cliente.toLowerCase().includes(filters.cliente.toLowerCase()),
+          : normalizeTextForSearch(order.cliente).includes(
+              normalizeTextForSearch(filters.cliente),
+            ),
       )
       .filter((order) =>
         filters.status === undefined ? true : order.status === filters.status,
@@ -280,6 +283,12 @@ describe('Orders E2E', () => {
         valor_estimado: 200,
         status: OrderStatus.EM_ANDAMENTO,
       },
+      {
+        cliente: 'Letícia Ramos',
+        descricao: 'Ajuste de dobradiça',
+        valor_estimado: 250,
+        status: OrderStatus.ABERTA,
+      },
     ];
 
     for (const payload of orderPayloads) {
@@ -315,6 +324,42 @@ describe('Orders E2E', () => {
       total: 1,
       totalPages: 1,
     });
+  });
+
+  it('should filter client names ignoring accents', async () => {
+    const token = await login();
+    const authHeader = { Authorization: `Bearer ${token}` };
+
+    await request(getHttpServer())
+      .post('/orders')
+      .set(authHeader)
+      .send({
+        cliente: 'Letícia Ramos',
+        descricao: 'Ajuste fino',
+        valor_estimado: 180,
+        status: OrderStatus.ABERTA,
+      } satisfies CreateOrderDto)
+      .expect(201);
+
+    const response = await request(getHttpServer())
+      .get('/orders')
+      .set(authHeader)
+      .query({
+        cliente: 'leticia',
+        page: 1,
+        limit: 10,
+      })
+      .expect(200);
+
+    const responseBody = response.body as ListOrdersResponse;
+
+    expect(responseBody.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          cliente: 'Letícia Ramos',
+        }),
+      ]),
+    );
   });
 
   it('should enforce the status transition rule through HTTP', async () => {

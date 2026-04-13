@@ -39,6 +39,18 @@ export type OrdersResponse = {
   };
 };
 
+export type OrderSortBy = "data_criacao" | "valor_estimado";
+export type SortOrder = "asc" | "desc";
+
+export type GetOrdersParams = {
+  cliente?: string;
+  status?: OrderStatus;
+  page?: number;
+  limit?: number;
+  sort_by?: OrderSortBy;
+  sort_order?: SortOrder;
+};
+
 function getApiUrl(): string {
   return process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_API_URL;
 }
@@ -74,7 +86,7 @@ export async function loginRequest(
 
 export async function getOrdersRequest(
   token: string,
-  params?: Record<string, string | number | undefined>,
+  params?: GetOrdersParams,
 ): Promise<OrdersResponse> {
   const searchParams = new URLSearchParams();
 

@@ -37,7 +37,7 @@ export function OperationalSummaryCard({
         <h2 className="text-xl font-semibold text-foreground">Resumo operacional</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
         {summaryItems.map((item) => (
           <div
             key={item.label}

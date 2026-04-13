@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  getPostgresAccentInsensitiveExpression,
+  normalizeTextForSearch,
+} from '../../common/utils/text-normalization.util';
 import { Order } from '../entities/order.entity';
 import {
   CreateOrderRepositoryData,
@@ -28,9 +32,12 @@ export class TypeOrmOrderRepository implements OrderRepository {
     const queryBuilder = this.repository.createQueryBuilder('order');
 
     if (filters.cliente !== undefined) {
-      queryBuilder.andWhere('order.cliente ILIKE :cliente', {
-        cliente: `%${filters.cliente}%`,
-      });
+      queryBuilder.andWhere(
+        `${getPostgresAccentInsensitiveExpression('order.cliente')} LIKE :cliente`,
+        {
+          cliente: `%${normalizeTextForSearch(filters.cliente)}%`,
+        },
+      );
     }
 
     if (filters.status !== undefined) {
