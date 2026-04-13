@@ -73,10 +73,6 @@ export function LoginForm() {
           <h2 className="text-3xl font-semibold tracking-tight text-foreground">
             Acessar sua conta
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Ambiente de demonstração: use <span className="font-medium text-foreground">admin</span> /{" "}
-            <span className="font-medium text-foreground">admin</span>.
-          </p>
         </div>
       </div>
 
