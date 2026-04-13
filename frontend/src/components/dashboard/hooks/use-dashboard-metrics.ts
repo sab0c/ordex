@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { ApiRequestError, getOrdersRequest } from "@/lib/api";
-import { dashboardStatusRequests } from "../constants/dashboard.constants";
+import { ApiRequestError, getDashboardMetricsRequest } from "@/lib/api";
 import type { DashboardMetrics } from "../types/dashboard.types";
-import { countOrdersFromLastDays } from "../utils/dashboard-metrics";
 
 const DASHBOARD_METRICS_CACHE_KEY = "ordex-dashboard-metrics";
 const DASHBOARD_RETRY_DELAYS_MS = [800, 1600, 3200, 6400];
@@ -50,34 +48,7 @@ function sleep(ms: number): Promise<void> {
 async function loadDashboardMetricsWithRetry(token: string): Promise<DashboardMetrics> {
   for (let attempt = 0; attempt <= DASHBOARD_RETRY_DELAYS_MS.length; attempt += 1) {
     try {
-      const [
-        openOrdersResponse,
-        inProgressOrdersResponse,
-        concludedOrdersResponse,
-        cancelledOrdersResponse,
-        valueOrdersResponse,
-      ] = await Promise.all([
-        getOrdersRequest(token, dashboardStatusRequests.openOrders),
-        getOrdersRequest(token, dashboardStatusRequests.inProgressOrders),
-        getOrdersRequest(token, dashboardStatusRequests.concludedOrders),
-        getOrdersRequest(token, dashboardStatusRequests.cancelledOrders),
-        getOrdersRequest(token, dashboardStatusRequests.valueOrders),
-      ]);
-
-      const totalEstimatedValue = valueOrdersResponse.data.reduce(
-        (accumulator, order) => accumulator + Number(order.valor_estimado),
-        0,
-      );
-
-      return {
-        totalOrders: valueOrdersResponse.pagination.total,
-        openOrders: openOrdersResponse.pagination.total,
-        inProgressOrders: inProgressOrdersResponse.pagination.total,
-        concludedOrders: concludedOrdersResponse.pagination.total,
-        cancelledOrders: cancelledOrdersResponse.pagination.total,
-        totalEstimatedValue,
-        recentOrdersLastThreeDays: countOrdersFromLastDays(valueOrdersResponse.data, 3),
-      };
+      return await getDashboardMetricsRequest(token);
     } catch (error) {
       const nextDelay = DASHBOARD_RETRY_DELAYS_MS[attempt];
 

@@ -15,8 +15,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:e2e": "jest --testPathPatterns=e2e"
+    "test": "jest --testPathIgnorePatterns=real-db",
+    "test:e2e": "jest --testPathPatterns=e2e --testPathIgnorePatterns=real-db",
+    "test:e2e:real": "jest --runInBand --testPathPatterns=real-db"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

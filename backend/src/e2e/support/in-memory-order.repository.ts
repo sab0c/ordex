@@ -1,9 +1,11 @@
 import { normalizeTextForSearch } from '../../common/utils/text-normalization.util';
 import { OrderSortBy, SortOrder } from '../../orders/dto/list-orders-query.dto';
 import { Order } from '../../orders/entities/order.entity';
+import { OrderStatus } from '../../orders/enums/order-status.enum';
 import {
   CreateOrderRepositoryData,
   ListOrdersRepositoryFilters,
+  OrderMetricsRepositoryResult,
   ListOrdersRepositoryResult,
   OrderRepository,
 } from '../../orders/repositories/order.repository';
@@ -78,6 +80,33 @@ export class InMemoryOrderRepository implements OrderRepository {
         total,
         totalPages: total === 0 ? 0 : Math.ceil(total / filters.limit),
       },
+    });
+  }
+
+  getMetrics(): Promise<OrderMetricsRepositoryResult> {
+    const lastThreeDaysThreshold = Date.now() - 3 * 24 * 60 * 60 * 1000;
+
+    return Promise.resolve({
+      totalOrders: this.orders.length,
+      openOrders: this.orders.filter(
+        (order) => order.status === OrderStatus.ABERTA,
+      ).length,
+      inProgressOrders: this.orders.filter(
+        (order) => order.status === OrderStatus.EM_ANDAMENTO,
+      ).length,
+      concludedOrders: this.orders.filter(
+        (order) => order.status === OrderStatus.CONCLUIDA,
+      ).length,
+      cancelledOrders: this.orders.filter(
+        (order) => order.status === OrderStatus.CANCELADA,
+      ).length,
+      totalEstimatedValue: this.orders.reduce(
+        (accumulator, order) => accumulator + Number(order.valor_estimado),
+        0,
+      ),
+      recentOrdersLastThreeDays: this.orders.filter(
+        (order) => order.data_criacao.getTime() >= lastThreeDaysThreshold,
+      ).length,
     });
   }
 

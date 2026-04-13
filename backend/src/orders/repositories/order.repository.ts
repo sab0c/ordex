@@ -30,11 +30,22 @@ export type ListOrdersRepositoryResult = {
   };
 };
 
+export type OrderMetricsRepositoryResult = {
+  totalOrders: number;
+  openOrders: number;
+  inProgressOrders: number;
+  concludedOrders: number;
+  cancelledOrders: number;
+  totalEstimatedValue: number;
+  recentOrdersLastThreeDays: number;
+};
+
 export interface OrderRepository {
   create(data: CreateOrderRepositoryData): Promise<Order>;
   findAll(
     filters: ListOrdersRepositoryFilters,
   ): Promise<ListOrdersRepositoryResult>;
+  getMetrics(): Promise<OrderMetricsRepositoryResult>;
   findById(id: number): Promise<Order | null>;
   save(order: Order): Promise<Order>;
 }

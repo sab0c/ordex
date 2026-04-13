@@ -1,4 +1,3 @@
-import type { Order } from "@/lib/api";
 import type { OperationalSummaryItem } from "../types/dashboard.types";
 
 export function formatDashboardCurrency(value: number): string {
@@ -6,14 +5,6 @@ export function formatDashboardCurrency(value: number): string {
     style: "currency",
     currency: "BRL",
   }).format(value);
-}
-
-export function countOrdersFromLastDays(orders: Order[], days: number): number {
-  const now = new Date();
-  const threshold = new Date(now);
-  threshold.setDate(now.getDate() - days);
-
-  return orders.filter((order) => new Date(order.data_criacao) >= threshold).length;
 }
 
 export function calculateAverageEstimatedValue(

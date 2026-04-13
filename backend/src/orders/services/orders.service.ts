@@ -12,6 +12,7 @@ import {
   SortOrder,
 } from '../dto/list-orders-query.dto';
 import { ListOrdersResponseDto } from '../dto/list-orders-response.dto';
+import { OrdersMetricsResponseDto } from '../dto/orders-metrics-response.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { Order } from '../entities/order.entity';
@@ -49,6 +50,10 @@ export class OrdersService {
       sortBy: queryDto.sort_by ?? OrderSortBy.DATA_CRIACAO,
       sortOrder: queryDto.sort_order ?? SortOrder.DESC,
     });
+  }
+
+  async getMetrics(): Promise<OrdersMetricsResponseDto> {
+    return this.orderRepository.getMetrics();
   }
 
   async findById(id: number): Promise<Order> {

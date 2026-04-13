@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { ListOrdersQueryDto } from '../dto/list-orders-query.dto';
 import { ListOrdersResponseDto } from '../dto/list-orders-response.dto';
+import { OrdersMetricsResponseDto } from '../dto/orders-metrics-response.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { Order } from '../entities/order.entity';
@@ -58,6 +59,18 @@ export class OrdersController {
     @Query() queryDto: ListOrdersQueryDto,
   ): Promise<ListOrdersResponseDto> {
     return this.ordersService.findAll(queryDto);
+  }
+
+  @Get('metrics')
+  @ApiOperation({ summary: 'Obter métricas agregadas das ordens de serviço' })
+  @ApiResponse({
+    status: 200,
+    description: 'Métricas agregadas retornadas com sucesso.',
+    type: OrdersMetricsResponseDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'Token JWT ausente ou inválido.' })
+  async getMetrics(): Promise<OrdersMetricsResponseDto> {
+    return this.ordersService.getMetrics();
   }
 
   @Get(':id')

@@ -73,14 +73,15 @@ export function NewOrderForm({
             onChange={(event) => onClienteChange(event.target.value)}
           />
 
-          <Input
-            error={errors.valorEstimado}
-            id="new-order-valor-estimado"
-            inputMode="decimal"
-            label="Valor estimado"
-            placeholder="R$ 0,00"
-            value={values.valorEstimado}
-            onChange={(event) => onValorEstimadoChange(event.target.value)}
+          <FilterSelect
+            id="new-order-status"
+            allowEmpty={false}
+            isOpen={isOpen}
+            label="Status inicial"
+            options={initialStatusOptions}
+            value={values.status}
+            onChange={(value) => onStatusChange(value as OrderStatus)}
+            onOpenChange={onOpenStatusChange}
           />
         </div>
 
@@ -94,15 +95,14 @@ export function NewOrderForm({
         />
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
-          <FilterSelect
-            id="new-order-status"
-            allowEmpty={false}
-            isOpen={isOpen}
-            label="Status inicial"
-            options={initialStatusOptions}
-            value={values.status}
-            onChange={(value) => onStatusChange(value as OrderStatus)}
-            onOpenChange={onOpenStatusChange}
+          <Input
+            error={errors.valorEstimado}
+            id="new-order-valor-estimado"
+            inputMode="decimal"
+            label="Valor estimado"
+            placeholder="R$ 0,00"
+            value={values.valorEstimado}
+            onChange={(event) => onValorEstimadoChange(event.target.value)}
           />
 
           <Button

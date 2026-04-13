@@ -26,6 +26,7 @@ describe('OrdersService', () => {
     repository = {
       create: jest.fn(),
       findAll: jest.fn(),
+      getMetrics: jest.fn(),
       findById: jest.fn(),
       save: jest.fn(),
     };
@@ -180,6 +181,25 @@ describe('OrdersService', () => {
       sortOrder: SortOrder.DESC,
     });
     expect(result).toEqual(paginatedOrders);
+  });
+
+  it('should return aggregated metrics', async () => {
+    const metrics = {
+      totalOrders: 4,
+      openOrders: 1,
+      inProgressOrders: 2,
+      concludedOrders: 1,
+      cancelledOrders: 0,
+      totalEstimatedValue: 780.5,
+      recentOrdersLastThreeDays: 3,
+    };
+
+    repository.getMetrics.mockResolvedValue(metrics);
+
+    const result = await service.getMetrics();
+
+    expect(repository.getMetrics.mock.calls).toHaveLength(1);
+    expect(result).toEqual(metrics);
   });
 
   it('should return an order by id', async () => {
