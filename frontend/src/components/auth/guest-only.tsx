@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthRedirect } from "@/hooks/use-auth-redirect";
+import { AuthScreenFallback } from "./auth-screen-fallback";
 
 export function GuestOnly({
   children,
@@ -10,11 +11,7 @@ export function GuestOnly({
   const { isReady } = useAuthRedirect("guest");
 
   if (!isReady) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        Carregando...
-      </div>
-    );
+    return <AuthScreenFallback message="Carregando..." />;
   }
 
   return <>{children}</>;

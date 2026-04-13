@@ -1,4 +1,5 @@
 import { Card } from "../ui/card";
+import { buildOperationalSummaryItems } from "./utils/dashboard-metrics";
 
 type OperationalSummaryCardProps = {
   cancelledOrders: number;
@@ -15,21 +16,13 @@ export function OperationalSummaryCard({
   openOrders,
   totalOrders,
 }: Readonly<OperationalSummaryCardProps>) {
-  const summaryItems = [
-    {
-      label: "Ordens em aberto e em andamento",
-      value: openOrders + inProgressOrders,
-    },
-    {
-      label: "Ordens encerradas",
-      value: concludedOrders + cancelledOrders,
-    },
-    {
-      label: "Taxa de conclusão",
-      value:
-        totalOrders === 0 ? "0%" : `${Math.round((concludedOrders / totalOrders) * 100)}%`,
-    },
-  ] as const;
+  const summaryItems = buildOperationalSummaryItems({
+    cancelledOrders,
+    concludedOrders,
+    inProgressOrders,
+    openOrders,
+    totalOrders,
+  });
 
   return (
     <Card className="space-y-6">

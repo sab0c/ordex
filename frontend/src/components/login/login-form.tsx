@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setStoredAccessToken } from "@/lib/auth";
 import { loginRequest } from "@/lib/api";
+import { appRoutes } from "@/lib/routes";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Input } from "../ui/input";
@@ -49,7 +50,7 @@ export function LoginForm() {
       });
 
       setStoredAccessToken(response.access_token);
-      router.push("/dashboard");
+      router.push(appRoutes.dashboard);
     } catch (error) {
       setErrors({
         form:

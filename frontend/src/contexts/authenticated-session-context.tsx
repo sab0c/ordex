@@ -28,7 +28,7 @@ export function useAuthenticatedSession() {
 
   if (!context) {
     throw new Error(
-      "useAuthenticatedSession must be used within AuthenticatedSessionProvider.",
+      "useAuthenticatedSession deve ser usado dentro de AuthenticatedSessionProvider.",
     );
   }
 

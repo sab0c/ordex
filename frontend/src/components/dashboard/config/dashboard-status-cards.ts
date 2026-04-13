@@ -1,0 +1,47 @@
+import { dashboardStatusColorTokens } from "@/app/themes/dashboard-color-tokens";
+import type {
+  DashboardMetrics,
+  DashboardStatusCard,
+  DashboardStatusMetricKey,
+} from "../types/dashboard.types";
+
+const dashboardStatusCardConfig: Array<{
+  key: DashboardStatusMetricKey;
+  label: string;
+  accent: string;
+  helper: string;
+}> = [
+  {
+    key: "openOrders",
+    label: "Ordens abertas",
+    accent: dashboardStatusColorTokens.Aberta.accent,
+    helper: "Quantidade de ordens aguardando atendimento ou triagem inicial.",
+  },
+  {
+    key: "inProgressOrders",
+    label: "Em andamento",
+    accent: dashboardStatusColorTokens["Em andamento"].accent,
+    helper: "Quantidade de ordens que já estão em execução neste momento.",
+  },
+  {
+    key: "concludedOrders",
+    label: "Concluídas",
+    accent: dashboardStatusColorTokens.Concluída.accent,
+    helper: "Quantidade de ordens finalizadas com sucesso pela operação.",
+  },
+  {
+    key: "cancelledOrders",
+    label: "Canceladas",
+    accent: dashboardStatusColorTokens.Cancelada.accent,
+    helper: "Quantidade de ordens encerradas sem continuidade operacional.",
+  },
+];
+
+export function buildDashboardStatusCards(
+  metrics: DashboardMetrics,
+): DashboardStatusCard[] {
+  return dashboardStatusCardConfig.map((card) => ({
+    ...card,
+    value: metrics[card.key],
+  }));
+}

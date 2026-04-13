@@ -1,5 +1,12 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Field,
+  FieldLabel,
+  FieldMessage,
+  fieldControlBaseClassName,
+  fieldSizeClassNames,
+} from "./field";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -120,15 +127,18 @@ export function Input({
   }
 
   return (
-    <label className="flex w-full flex-col gap-2 text-sm text-foreground" htmlFor={id}>
-      <span className="font-medium text-muted-foreground">{label}</span>
+    <Field htmlFor={id}>
+      <FieldLabel>{label}</FieldLabel>
       <div className="relative">
         <input
           id={id}
           ref={inputRef}
           type={resolvedType}
           className={cn(
-            "themed-input h-12 w-full rounded-2xl border border-transparent bg-input-surface px-4 text-sm text-foreground outline-none backdrop-blur-md transition-[border-color,box-shadow,background-color] placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring",
+            fieldControlBaseClassName,
+            fieldSizeClassNames.default,
+            "rounded-2xl",
+            "placeholder:text-muted-foreground/70",
             (isPasswordField || showClearButton) && "pr-12",
             error && "border-danger focus:border-danger focus:ring-danger/30",
             className,
@@ -156,7 +166,7 @@ export function Input({
           </button>
         ) : null}
       </div>
-      {error ? <span className="text-xs text-danger">{error}</span> : null}
-    </label>
+      {error ? <FieldMessage className="text-danger">{error}</FieldMessage> : null}
+    </Field>
   );
 }

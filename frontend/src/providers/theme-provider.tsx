@@ -7,8 +7,12 @@ import {
   useMemo,
   useState,
 } from "react";
-
-type Theme = "dark" | "light";
+import {
+  THEME_STORAGE_KEY,
+  applyTheme,
+  resolveThemePreference,
+  type Theme,
+} from "@/lib/theme";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -16,40 +20,7 @@ type ThemeContextValue = {
   setTheme: (theme: Theme) => void;
 };
 
-const STORAGE_KEY = "ordex-theme";
-const THEME_ICON_ATTRIBUTE = "data-ordex-theme-icon";
-
-function getThemeIconHref(theme: Theme): string {
-  return theme === "light" ? "/icons/icon-light.svg" : "/icons/icon-dark.svg";
-}
-
-function syncThemeIcon(theme: Theme): void {
-  const href = getThemeIconHref(theme);
-  const linkRels = ["icon", "shortcut icon"];
-
-  linkRels.forEach((rel) => {
-    let link = document.head.querySelector<HTMLLinkElement>(
-      `link[${THEME_ICON_ATTRIBUTE}="${rel}"]`,
-    );
-
-    if (!link) {
-      link = document.createElement("link");
-      link.setAttribute(THEME_ICON_ATTRIBUTE, rel);
-      link.rel = rel;
-      link.type = "image/svg+xml";
-      document.head.appendChild(link);
-    }
-
-    link.href = href;
-  });
-}
-
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
-
-function applyTheme(theme: Theme): void {
-  document.documentElement.dataset.theme = theme;
-  syncThemeIcon(theme);
-}
 
 export function ThemeProvider({
   children,
@@ -61,14 +32,12 @@ export function ThemeProvider({
       return "dark";
     }
 
-    return window.localStorage.getItem(STORAGE_KEY) === "light"
-      ? "light"
-      : "dark";
+    return resolveThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY));
   });
 
   useEffect(() => {
     applyTheme(theme);
-    window.localStorage.setItem(STORAGE_KEY, theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(

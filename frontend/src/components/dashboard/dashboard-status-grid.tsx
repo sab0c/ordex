@@ -1,12 +1,5 @@
 import { StatCard } from "../ui/stat-card";
-
-export type DashboardStatusCard = {
-  key: string;
-  accent: string;
-  helper: string;
-  label: string;
-  value: number;
-};
+import type { DashboardStatusCard } from "./types/dashboard.types";
 
 export function DashboardStatusGrid({
   cards,

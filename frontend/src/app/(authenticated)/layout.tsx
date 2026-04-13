@@ -1,6 +1,6 @@
 import { AuthenticatedAppLayout } from "@/components/auth/authenticated-app-layout";
 
-export default function DashboardLayout({
+export default function AuthenticatedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

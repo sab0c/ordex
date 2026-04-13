@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { getStoredAccessToken, subscribeToAuthChange } from "@/lib/auth";
+import { appRoutes } from "@/lib/routes";
 
-type AuthMode = "authenticated" | "guest";
+export type AuthMode = "authenticated" | "guest";
 
 function getServerSnapshot(): string | null {
   return null;
@@ -12,16 +13,12 @@ function getServerSnapshot(): string | null {
 
 export function useAuthRedirect(mode: AuthMode) {
   const router = useRouter();
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = typeof window !== "undefined";
   const token = useSyncExternalStore(
     subscribeToAuthChange,
     getStoredAccessToken,
     getServerSnapshot,
   );
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -31,12 +28,12 @@ export function useAuthRedirect(mode: AuthMode) {
     const isAuthenticated = Boolean(token);
 
     if (mode === "authenticated" && !isAuthenticated) {
-      router.replace("/");
+      router.replace(appRoutes.home);
       return;
     }
 
     if (mode === "guest" && isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace(appRoutes.dashboard);
     }
   }, [isHydrated, mode, router, token]);
 
