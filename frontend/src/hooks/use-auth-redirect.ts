@@ -11,9 +11,26 @@ function getServerSnapshot(): string | null {
   return null;
 }
 
+function subscribeToHydration(callback: () => void): () => void {
+  void callback;
+  return () => undefined;
+}
+
+function getClientHydrationSnapshot(): boolean {
+  return true;
+}
+
+function getServerHydrationSnapshot(): boolean {
+  return false;
+}
+
 export function useAuthRedirect(mode: AuthMode) {
   const router = useRouter();
-  const isHydrated = typeof window !== "undefined";
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  );
   const token = useSyncExternalStore(
     subscribeToAuthChange,
     getStoredAccessToken,

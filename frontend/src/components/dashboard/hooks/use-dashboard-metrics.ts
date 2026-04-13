@@ -1,58 +1,131 @@
 import { useEffect, useState } from "react";
-import { getOrdersRequest } from "@/lib/api";
+import { ApiRequestError, getOrdersRequest } from "@/lib/api";
 import { dashboardStatusRequests } from "../constants/dashboard.constants";
 import type { DashboardMetrics } from "../types/dashboard.types";
 import { countOrdersFromLastDays } from "../utils/dashboard-metrics";
 
+const DASHBOARD_METRICS_CACHE_KEY = "ordex-dashboard-metrics";
+const DASHBOARD_RETRY_DELAYS_MS = [800, 1600, 3200, 6400];
+
+function readDashboardMetricsCache(): DashboardMetrics | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawValue = window.sessionStorage.getItem(DASHBOARD_METRICS_CACHE_KEY);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawValue) as DashboardMetrics;
+  } catch {
+    window.sessionStorage.removeItem(DASHBOARD_METRICS_CACHE_KEY);
+    return null;
+  }
+}
+
+function writeDashboardMetricsCache(metrics: DashboardMetrics): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.setItem(
+    DASHBOARD_METRICS_CACHE_KEY,
+    JSON.stringify(metrics),
+  );
+}
+
+function isTooManyRequestsError(error: unknown): boolean {
+  return error instanceof ApiRequestError && error.status === 429;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+async function loadDashboardMetricsWithRetry(token: string): Promise<DashboardMetrics> {
+  for (let attempt = 0; attempt <= DASHBOARD_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      const [
+        openOrdersResponse,
+        inProgressOrdersResponse,
+        concludedOrdersResponse,
+        cancelledOrdersResponse,
+        valueOrdersResponse,
+      ] = await Promise.all([
+        getOrdersRequest(token, dashboardStatusRequests.openOrders),
+        getOrdersRequest(token, dashboardStatusRequests.inProgressOrders),
+        getOrdersRequest(token, dashboardStatusRequests.concludedOrders),
+        getOrdersRequest(token, dashboardStatusRequests.cancelledOrders),
+        getOrdersRequest(token, dashboardStatusRequests.valueOrders),
+      ]);
+
+      const totalEstimatedValue = valueOrdersResponse.data.reduce(
+        (accumulator, order) => accumulator + Number(order.valor_estimado),
+        0,
+      );
+
+      return {
+        totalOrders: valueOrdersResponse.pagination.total,
+        openOrders: openOrdersResponse.pagination.total,
+        inProgressOrders: inProgressOrdersResponse.pagination.total,
+        concludedOrders: concludedOrdersResponse.pagination.total,
+        cancelledOrders: cancelledOrdersResponse.pagination.total,
+        totalEstimatedValue,
+        recentOrdersLastThreeDays: countOrdersFromLastDays(valueOrdersResponse.data, 3),
+      };
+    } catch (error) {
+      const nextDelay = DASHBOARD_RETRY_DELAYS_MS[attempt];
+
+      if (!isTooManyRequestsError(error) || nextDelay === undefined) {
+        throw error;
+      }
+
+      await sleep(nextDelay);
+    }
+  }
+
+  throw new Error("Não foi possível carregar o dashboard.");
+}
+
 export function useDashboardMetrics(token: string) {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(() =>
+    readDashboardMetricsCache(),
+  );
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(metrics === null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadDashboard() {
-      setIsLoading(true);
+      setIsLoading(readDashboardMetricsCache() === null);
       setError(null);
 
       try {
-        const [
-          totalOrdersResponse,
-          openOrdersResponse,
-          inProgressOrdersResponse,
-          concludedOrdersResponse,
-          cancelledOrdersResponse,
-          valueOrdersResponse,
-        ] = await Promise.all([
-          getOrdersRequest(token, dashboardStatusRequests.totalOrders),
-          getOrdersRequest(token, dashboardStatusRequests.openOrders),
-          getOrdersRequest(token, dashboardStatusRequests.inProgressOrders),
-          getOrdersRequest(token, dashboardStatusRequests.concludedOrders),
-          getOrdersRequest(token, dashboardStatusRequests.cancelledOrders),
-          getOrdersRequest(token, dashboardStatusRequests.valueOrders),
-        ]);
-
-        const totalEstimatedValue = valueOrdersResponse.data.reduce(
-          (accumulator, order) => accumulator + Number(order.valor_estimado),
-          0,
-        );
+        const nextMetrics = await loadDashboardMetricsWithRetry(token);
 
         if (!isMounted) {
           return;
         }
 
-        setMetrics({
-          totalOrders: totalOrdersResponse.pagination.total,
-          openOrders: openOrdersResponse.pagination.total,
-          inProgressOrders: inProgressOrdersResponse.pagination.total,
-          concludedOrders: concludedOrdersResponse.pagination.total,
-          cancelledOrders: cancelledOrdersResponse.pagination.total,
-          totalEstimatedValue,
-          recentOrdersLastThreeDays: countOrdersFromLastDays(valueOrdersResponse.data, 3),
-        });
+        writeDashboardMetricsCache(nextMetrics);
+        setMetrics(nextMetrics);
       } catch (requestError) {
         if (!isMounted) {
+          return;
+        }
+
+        const cachedMetrics = readDashboardMetricsCache();
+
+        if (cachedMetrics) {
+          setMetrics(cachedMetrics);
+          setError(null);
+          setIsLoading(false);
           return;
         }
 

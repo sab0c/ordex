@@ -5,6 +5,13 @@ type LoginPayload = {
   password: string;
 };
 
+export type CreateOrderPayload = {
+  cliente: string;
+  descricao: string;
+  valor_estimado: number;
+  status?: OrderStatus;
+};
+
 export type LoginSuccessResponse = {
   access_token: string;
 };
@@ -12,6 +19,16 @@ export type LoginSuccessResponse = {
 type ApiErrorResponse = {
   message?: string | string[];
 };
+
+export class ApiRequestError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+  }
+}
 
 export type OrderStatus =
   | "Aberta"
@@ -63,7 +80,10 @@ async function parseError(response: Response): Promise<never> {
     ? errorBody.message.join(", ")
     : errorBody?.message;
 
-  throw new Error(message || "Não foi possível concluir a solicitação.");
+  throw new ApiRequestError(
+    message || "Não foi possível concluir a solicitação.",
+    response.status,
+  );
 }
 
 export async function loginRequest(
@@ -112,4 +132,24 @@ export async function getOrdersRequest(
   }
 
   return (await response.json()) as OrdersResponse;
+}
+
+export async function createOrderRequest(
+  token: string,
+  payload: CreateOrderPayload,
+): Promise<Order> {
+  const response = await fetch(`${getApiUrl()}/orders`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await parseError(response);
+  }
+
+  return (await response.json()) as Order;
 }

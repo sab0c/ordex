@@ -1,0 +1,44 @@
+"use client";
+
+import { useState } from "react";
+import { useAuthenticatedSession } from "@/contexts/authenticated-session-context";
+import { useNewOrderForm } from "./hooks/use-new-order-form";
+import { NewOrderForm } from "./ui/new-order-form";
+
+export function NewOrderPage() {
+  const { token } = useAuthenticatedSession();
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const {
+    createdOrderId,
+    errors,
+    handleCurrencyChange,
+    handleReset,
+    handleStatusChange,
+    handleSubmit,
+    isSubmitting,
+    setFieldValue,
+    values,
+  } = useNewOrderForm(token);
+
+  return (
+    <div className="max-w-4xl">
+      <NewOrderForm
+        createdOrderId={createdOrderId}
+        errors={errors}
+        isOpen={isStatusOpen}
+        isSubmitting={isSubmitting}
+        values={values}
+        onClienteChange={(value) => setFieldValue("cliente", value)}
+        onDescricaoChange={(value) => setFieldValue("descricao", value)}
+        onOpenStatusChange={setIsStatusOpen}
+        onReset={() => {
+          setIsStatusOpen(false);
+          handleReset();
+        }}
+        onStatusChange={handleStatusChange}
+        onSubmit={handleSubmit}
+        onValorEstimadoChange={handleCurrencyChange}
+      />
+    </div>
+  );
+}

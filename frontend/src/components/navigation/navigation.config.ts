@@ -19,8 +19,8 @@ export const navigationItems: NavigationItem[] = [
   {
     href: appRoutes.newOrder,
     label: "Nova Ordem",
-    description: "Em breve",
+    description: "Criar cadastro",
     icon: "new-order",
-    isAvailable: false,
+    isAvailable: true,
   },
 ];
