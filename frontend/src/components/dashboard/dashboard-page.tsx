@@ -12,8 +12,8 @@ import { DashboardLoadingState } from "./ui/dashboard-loading-state";
 import { calculateAverageEstimatedValue, formatDashboardCurrency } from "./utils/dashboard-metrics";
 
 export function DashboardPage() {
-  const { token } = useAuthenticatedSession();
-  const { error, isLoading, metrics } = useDashboardMetrics(token);
+  const { isReady, token } = useAuthenticatedSession();
+  const { error, isLoading, metrics } = useDashboardMetrics(token, isReady);
 
   const statusCards = useMemo(() => {
     if (!metrics) {

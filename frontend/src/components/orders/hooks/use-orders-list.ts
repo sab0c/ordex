@@ -87,7 +87,11 @@ async function loadOrdersWithRetry(
   throw new Error("Não foi possível carregar as ordens.");
 }
 
-export function useOrdersList(token: string, queryState: OrdersQueryState) {
+export function useOrdersList(
+  token: string | null,
+  queryState: OrdersQueryState,
+  isReady: boolean,
+) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -95,6 +99,13 @@ export function useOrdersList(token: string, queryState: OrdersQueryState) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isReady || !token) {
+      setError(null);
+      setIsLoading(true);
+      return;
+    }
+
+    const authToken = token;
     let isMounted = true;
     const requestParams: GetOrdersParams = {
       page: queryState.page,
@@ -113,7 +124,7 @@ export function useOrdersList(token: string, queryState: OrdersQueryState) {
       setError(null);
 
       try {
-        const nextData = await loadOrdersWithRetry(token, requestParams);
+        const nextData = await loadOrdersWithRetry(authToken, requestParams);
 
         if (!isMounted) {
           return;
@@ -156,7 +167,7 @@ export function useOrdersList(token: string, queryState: OrdersQueryState) {
     return () => {
       isMounted = false;
     };
-  }, [queryState, token]);
+  }, [isReady, queryState, token]);
 
   return {
     error,

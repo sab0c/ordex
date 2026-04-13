@@ -36,7 +36,7 @@ function validateForm(values: NewOrderFormValues): NewOrderFormErrors {
   return errors;
 }
 
-export function useNewOrderForm(token: string) {
+export function useNewOrderForm(token: string | null) {
   const [values, setValues] = useState<NewOrderFormValues>(initialFormValues);
   const [errors, setErrors] = useState<NewOrderFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,6 +89,13 @@ export function useNewOrderForm(token: string) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!token) {
+      setErrors({
+        form: "A autenticação ainda está sendo carregada. Tente novamente em instantes.",
+      });
+      return;
+    }
 
     const nextErrors = validateForm(values);
 

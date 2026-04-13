@@ -12,7 +12,7 @@ import { OrdersTable } from "./ui/orders-table";
 import { Card } from "../ui/card";
 
 export function OrdersPage() {
-  const { token } = useAuthenticatedSession();
+  const { isReady, token } = useAuthenticatedSession();
   const {
     filters,
     handleClearFilters: resetOrdersFilters,
@@ -25,6 +25,7 @@ export function OrdersPage() {
   const { error, isLoading, orders, total, totalPages } = useOrdersList(
     token,
     queryState,
+    isReady,
   );
   const [openFilterId, setOpenFilterId] = useState<string | null>(null);
 

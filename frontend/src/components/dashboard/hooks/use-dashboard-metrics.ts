@@ -92,14 +92,21 @@ async function loadDashboardMetricsWithRetry(token: string): Promise<DashboardMe
   throw new Error("Não foi possível carregar o dashboard.");
 }
 
-export function useDashboardMetrics(token: string) {
+export function useDashboardMetrics(token: string | null, isReady: boolean) {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(() =>
     readDashboardMetricsCache(),
   );
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(metrics === null);
+  const [isLoading, setIsLoading] = useState(!isReady || metrics === null);
 
   useEffect(() => {
+    if (!isReady || !token) {
+      setError(null);
+      setIsLoading(true);
+      return;
+    }
+
+    const authToken = token;
     let isMounted = true;
 
     async function loadDashboard() {
@@ -107,7 +114,7 @@ export function useDashboardMetrics(token: string) {
       setError(null);
 
       try {
-        const nextMetrics = await loadDashboardMetricsWithRetry(token);
+        const nextMetrics = await loadDashboardMetricsWithRetry(authToken);
 
         if (!isMounted) {
           return;
@@ -146,7 +153,7 @@ export function useDashboardMetrics(token: string) {
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [isReady, token]);
 
   return {
     metrics,

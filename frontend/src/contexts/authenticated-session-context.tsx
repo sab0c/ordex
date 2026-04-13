@@ -3,7 +3,8 @@
 import { createContext, useContext } from "react";
 
 type AuthenticatedSessionContextValue = {
-  token: string;
+  isReady: boolean;
+  token: string | null;
 };
 
 const AuthenticatedSessionContext =
@@ -11,13 +12,15 @@ const AuthenticatedSessionContext =
 
 export function AuthenticatedSessionProvider({
   children,
+  isReady,
   token,
 }: Readonly<{
   children: React.ReactNode;
-  token: string;
+  isReady: boolean;
+  token: string | null;
 }>) {
   return (
-    <AuthenticatedSessionContext.Provider value={{ token }}>
+    <AuthenticatedSessionContext.Provider value={{ isReady, token }}>
       {children}
     </AuthenticatedSessionContext.Provider>
   );

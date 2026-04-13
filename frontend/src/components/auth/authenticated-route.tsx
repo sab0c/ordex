@@ -4,7 +4,10 @@ import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import { AuthScreenFallback } from "./auth-screen-fallback";
 
 type AuthenticatedRouteProps = {
-  children: (token: string) => React.ReactNode;
+  children: (session: {
+    isReady: boolean;
+    token: string | null;
+  }) => React.ReactNode;
 };
 
 export function AuthenticatedRoute({
@@ -12,9 +15,13 @@ export function AuthenticatedRoute({
 }: Readonly<AuthenticatedRouteProps>) {
   const { isReady, token } = useAuthRedirect("authenticated");
 
-  if (!isReady || !token) {
+  if (!isReady) {
+    return <>{children({ isReady: false, token: null })}</>;
+  }
+
+  if (!token) {
     return <AuthScreenFallback message="Carregando área autenticada..." />;
   }
 
-  return <>{children(token)}</>;
+  return <>{children({ isReady: true, token })}</>;
 }

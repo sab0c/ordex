@@ -11,8 +11,8 @@ export function AuthenticatedAppLayout({
 }>) {
   return (
     <AuthenticatedRoute>
-      {(token) => (
-        <AuthenticatedSessionProvider token={token}>
+      {({ isReady, token }) => (
+        <AuthenticatedSessionProvider isReady={isReady} token={token}>
           <AppShell>{children}</AppShell>
         </AuthenticatedSessionProvider>
       )}
