@@ -1,4 +1,12 @@
-import type { MockOrderSeed } from "./mock-api.types";
+import type { OrderStatus } from "@/lib/api";
+
+export type MockOrderSeed = {
+  cliente: string;
+  descricao: string;
+  valor_estimado: string;
+  status: OrderStatus;
+  data_criacao: string;
+};
 
 const clientes = [
   "Carla Renata Almeida",

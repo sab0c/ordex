@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { MockServiceWorkerProvider } from "@/providers/mock-service-worker-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import {
   DEFAULT_THEME,
@@ -52,7 +53,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        <ThemeProvider>{children}</ThemeProvider>
+        <MockServiceWorkerProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </MockServiceWorkerProvider>
       </body>
     </html>
   );

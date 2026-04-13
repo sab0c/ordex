@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { HttpExceptionFilter } from '../../common/filters/http-exception.filter';
@@ -41,12 +40,14 @@ function applyTestingAppSetup(app: INestApplication): void {
 export async function createRealDbTestApp(): Promise<RealDbTestAppContext> {
   configureRealDbTestEnv();
 
-  const { default: migrationDataSource } = require('../../database/data-source') as {
-    default: DataSource;
-  };
+  const { default: migrationDataSource } =
+    require('../../database/data-source') as {
+      default: DataSource;
+    };
   const { Test } =
     require('@nestjs/testing') as typeof import('@nestjs/testing');
-  const { AppModule } = require('../../app.module') as typeof import('../../app.module');
+  const { AppModule } =
+    require('../../app.module') as typeof import('../../app.module');
 
   if (!migrationDataSource.isInitialized) {
     await migrationDataSource.initialize();
@@ -70,7 +71,9 @@ export async function createRealDbTestApp(): Promise<RealDbTestAppContext> {
     app,
     dataSource,
     resetDatabase: async () => {
-      await dataSource.query('TRUNCATE TABLE "orders" RESTART IDENTITY CASCADE;');
+      await dataSource.query(
+        'TRUNCATE TABLE "orders" RESTART IDENTITY CASCADE;',
+      );
     },
   };
 }

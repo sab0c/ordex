@@ -1,13 +1,15 @@
 import { ApiRequestError } from "@/lib/api";
 import type {
+  CreateOrderPayload,
+  DashboardMetricsResponse,
   GetOrdersParams,
   LoginSuccessResponse,
   Order,
   OrdersResponse,
 } from "@/lib/api";
-import type { ApiClient, DashboardMetricsResponse } from "./mock/mock-api.types";
 
 const DEFAULT_API_URL = "http://localhost:3000";
+const MOCK_API_URL = "/mock-api";
 const ORDERS_REQUEST_DEDUP_TTL_MS = 3000;
 
 const inFlightOrdersRequests = new Map<string, Promise<OrdersResponse>>();
@@ -21,6 +23,10 @@ type ApiErrorResponse = {
 };
 
 function getApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_MODE?.trim().toLowerCase() !== "real") {
+    return MOCK_API_URL;
+  }
+
   return process.env.NEXT_PUBLIC_API_URL?.trim() || DEFAULT_API_URL;
 }
 
@@ -83,8 +89,11 @@ function buildOrdersUrl(params?: GetOrdersParams): string {
   }`;
 }
 
-export const httpApiClient: ApiClient = {
-  async login(payload): Promise<LoginSuccessResponse> {
+export const httpApiClient = {
+  async login(payload: {
+    username: string;
+    password: string;
+  }): Promise<LoginSuccessResponse> {
     const response = await fetch(`${getApiUrl()}/auth/login`, {
       method: "POST",
       headers: {
@@ -100,7 +109,7 @@ export const httpApiClient: ApiClient = {
     return (await response.json()) as LoginSuccessResponse;
   },
 
-  async getOrders(token, params): Promise<OrdersResponse> {
+  async getOrders(token: string, params?: GetOrdersParams): Promise<OrdersResponse> {
     const url = buildOrdersUrl(params);
     const requestKey = buildOrdersRequestKey(token, url);
     const cachedResponse = readCachedOrdersResponse(requestKey);
@@ -141,7 +150,7 @@ export const httpApiClient: ApiClient = {
     }
   },
 
-  async getDashboardMetrics(token): Promise<DashboardMetricsResponse> {
+  async getDashboardMetrics(token: string): Promise<DashboardMetricsResponse> {
     const response = await fetch(`${getApiUrl()}/orders/metrics`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -156,7 +165,10 @@ export const httpApiClient: ApiClient = {
     return (await response.json()) as DashboardMetricsResponse;
   },
 
-  async createOrder(token, payload): Promise<Order> {
+  async createOrder(
+    token: string,
+    payload: CreateOrderPayload,
+  ): Promise<Order> {
     const response = await fetch(`${getApiUrl()}/orders`, {
       method: "POST",
       headers: {

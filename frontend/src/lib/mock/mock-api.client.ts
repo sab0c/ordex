@@ -1,21 +1,21 @@
-import { ApiRequestError } from "@/lib/api";
 import type {
   CreateOrderPayload,
+  DashboardMetricsResponse,
   GetOrdersParams,
-  LoginSuccessResponse,
   Order,
   OrderStatus,
-  OrdersResponse,
 } from "@/lib/api";
 import { mockOrdersSeed } from "./mock-orders.seed";
-import type { ApiClient, DashboardMetricsResponse } from "./mock-api.types";
 
-const MOCK_ORDERS_STORAGE_KEY = "ordex-mock-orders";
-const MOCK_ORDERS_STORAGE_VERSION = 5;
-const MOCK_TOKEN = "ordex-mock-admin-token";
-const MOCK_USERNAME = "admin";
-const MOCK_PASSWORD = "admin";
-const NETWORK_DELAY_MS = 180;
+const MOCK_DB_NAME = "ordex-mock-db";
+const MOCK_DB_VERSION = 1;
+const MOCK_STORE_NAME = "mock-storage";
+const MOCK_ORDERS_STORAGE_KEY = "orders";
+const MOCK_ORDERS_STORAGE_VERSION = 1;
+export const MOCK_TOKEN = "ordex-mock-admin-token";
+export const MOCK_USERNAME = "admin";
+export const MOCK_PASSWORD = "admin";
+export const MOCK_NETWORK_DELAY_MS = 180;
 
 type StoredOrder = Order;
 type StoredOrdersSnapshot = {
@@ -23,10 +23,53 @@ type StoredOrdersSnapshot = {
   orders: StoredOrder[];
 };
 
-function ensureBrowser(): void {
-  if (typeof window === "undefined") {
-    throw new Error("A API mockada só pode ser usada no navegador.");
-  }
+function openMockDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(MOCK_DB_NAME, MOCK_DB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const database = request.result;
+
+      if (!database.objectStoreNames.contains(MOCK_STORE_NAME)) {
+        database.createObjectStore(MOCK_STORE_NAME);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readSnapshot(): Promise<StoredOrdersSnapshot | null> {
+  const database = await openMockDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(MOCK_STORE_NAME, "readonly");
+    const store = transaction.objectStore(MOCK_STORE_NAME);
+    const request = store.get(MOCK_ORDERS_STORAGE_KEY);
+
+    request.onsuccess = () => {
+      resolve((request.result as StoredOrdersSnapshot | undefined) ?? null);
+    };
+    request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => database.close();
+  });
+}
+
+async function writeSnapshot(snapshot: StoredOrdersSnapshot): Promise<void> {
+  const database = await openMockDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(MOCK_STORE_NAME, "readwrite");
+    const store = transaction.objectStore(MOCK_STORE_NAME);
+
+    store.put(snapshot, MOCK_ORDERS_STORAGE_KEY);
+    transaction.oncomplete = () => {
+      database.close();
+      resolve();
+    };
+    transaction.onerror = () => reject(transaction.error);
+  });
 }
 
 function normalizeText(value: string): string {
@@ -35,12 +78,6 @@ function normalizeText(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
 }
 
 function buildSeedOrders(): StoredOrder[] {
@@ -55,57 +92,35 @@ function buildSeedOrders(): StoredOrder[] {
   }));
 }
 
-function readStoredOrders(): StoredOrder[] {
-  ensureBrowser();
+export async function readStoredOrders(): Promise<StoredOrder[]> {
+  const snapshot = await readSnapshot();
 
-  const rawValue = window.localStorage.getItem(MOCK_ORDERS_STORAGE_KEY);
-
-  if (!rawValue) {
-    const initialOrders = buildSeedOrders();
-    writeStoredOrders(initialOrders);
-    return initialOrders;
+  if (
+    snapshot &&
+    snapshot.version === MOCK_ORDERS_STORAGE_VERSION &&
+    Array.isArray(snapshot.orders) &&
+    snapshot.orders.length >= 36
+  ) {
+    return snapshot.orders;
   }
 
-  try {
-    const parsedSnapshot = JSON.parse(rawValue) as
-      | StoredOrdersSnapshot
-      | StoredOrder[];
-
-    if (
-      !Array.isArray(parsedSnapshot) &&
-      parsedSnapshot.version === MOCK_ORDERS_STORAGE_VERSION &&
-      Array.isArray(parsedSnapshot.orders) &&
-      parsedSnapshot.orders.length >= 36
-    ) {
-      return parsedSnapshot.orders;
-    }
-  } catch {
-    window.localStorage.removeItem(MOCK_ORDERS_STORAGE_KEY);
-  }
-
-  const nextOrders = buildSeedOrders();
-  writeStoredOrders(nextOrders);
-  return nextOrders;
+  const seedOrders = buildSeedOrders();
+  await writeStoredOrders(seedOrders);
+  return seedOrders;
 }
 
-function writeStoredOrders(orders: StoredOrder[]): void {
-  ensureBrowser();
-  window.localStorage.setItem(
-    MOCK_ORDERS_STORAGE_KEY,
-    JSON.stringify({
-      version: MOCK_ORDERS_STORAGE_VERSION,
-      orders,
-    } satisfies StoredOrdersSnapshot),
-  );
+export async function writeStoredOrders(orders: StoredOrder[]): Promise<void> {
+  await writeSnapshot({
+    version: MOCK_ORDERS_STORAGE_VERSION,
+    orders,
+  });
 }
 
-function requireToken(token: string): void {
-  if (token.trim().length === 0) {
-    throw new ApiRequestError("Sessão inválida. Faça login novamente.", 401);
-  }
+export function isValidMockToken(token: string): boolean {
+  return token.trim() === MOCK_TOKEN;
 }
 
-function applyOrdersFilters(
+export function applyOrdersFilters(
   orders: StoredOrder[],
   params?: GetOrdersParams,
 ): StoredOrder[] {
@@ -137,10 +152,18 @@ function applyOrdersFilters(
   return filteredOrders;
 }
 
-function paginateOrders(
+export function paginateOrders(
   orders: StoredOrder[],
   params?: GetOrdersParams,
-): OrdersResponse {
+): {
+  data: StoredOrder[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+} {
   const page = Math.max(params?.page ?? 1, 1);
   const limit = Math.max(params?.limit ?? 10, 1);
   const total = orders.length;
@@ -159,7 +182,9 @@ function paginateOrders(
   };
 }
 
-function buildDashboardMetrics(orders: StoredOrder[]): DashboardMetricsResponse {
+export function buildDashboardMetrics(
+  orders: StoredOrder[],
+): DashboardMetricsResponse {
   const now = Date.now();
   const lastThreeDaysThreshold = now - 3 * 24 * 60 * 60 * 1000;
 
@@ -182,7 +207,7 @@ function buildDashboardMetrics(orders: StoredOrder[]): DashboardMetricsResponse 
   };
 }
 
-function toPersistedOrder(
+export function toPersistedOrder(
   payload: CreateOrderPayload,
   nextId: number,
   now: string,
@@ -197,55 +222,3 @@ function toPersistedOrder(
     data_atualizacao: now,
   };
 }
-
-export const mockApiClient: ApiClient = {
-  async login(payload): Promise<LoginSuccessResponse> {
-    ensureBrowser();
-    await sleep(NETWORK_DELAY_MS);
-
-    if (
-      payload.username.trim() !== MOCK_USERNAME ||
-      payload.password !== MOCK_PASSWORD
-    ) {
-      throw new ApiRequestError("Credenciais inválidas.", 401);
-    }
-
-    return {
-      access_token: MOCK_TOKEN,
-    };
-  },
-
-  async getOrders(token, params): Promise<OrdersResponse> {
-    ensureBrowser();
-    requireToken(token);
-    await sleep(NETWORK_DELAY_MS);
-
-    const filteredOrders = applyOrdersFilters(readStoredOrders(), params);
-    return paginateOrders(filteredOrders, params);
-  },
-
-  async getDashboardMetrics(token): Promise<DashboardMetricsResponse> {
-    ensureBrowser();
-    requireToken(token);
-    await sleep(NETWORK_DELAY_MS);
-
-    return buildDashboardMetrics(readStoredOrders());
-  },
-
-  async createOrder(token, payload): Promise<Order> {
-    ensureBrowser();
-    requireToken(token);
-    await sleep(NETWORK_DELAY_MS);
-
-    const currentOrders = readStoredOrders();
-    const nextId = currentOrders.reduce(
-      (highestId, order) => Math.max(highestId, order.id),
-      0,
-    ) + 1;
-    const now = new Date().toISOString();
-    const nextOrder = toPersistedOrder(payload, nextId, now);
-
-    writeStoredOrders([nextOrder, ...currentOrders]);
-    return nextOrder;
-  },
-};

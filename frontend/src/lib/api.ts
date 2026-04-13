@@ -1,6 +1,4 @@
 import { httpApiClient } from "@/lib/http-api.client";
-import { mockApiClient } from "@/lib/mock/mock-api.client";
-import type { DashboardMetricsResponse } from "@/lib/mock/mock-api.types";
 
 type LoginPayload = {
   username: string;
@@ -54,6 +52,16 @@ export type OrdersResponse = {
   };
 };
 
+export type DashboardMetricsResponse = {
+  totalOrders: number;
+  openOrders: number;
+  inProgressOrders: number;
+  concludedOrders: number;
+  cancelledOrders: number;
+  totalEstimatedValue: number;
+  recentOrdersLastThreeDays: number;
+};
+
 export type OrderSortBy = "data_criacao" | "valor_estimado";
 export type SortOrder = "asc" | "desc";
 
@@ -69,27 +77,27 @@ export type GetOrdersParams = {
 export async function loginRequest(
   payload: LoginPayload,
 ): Promise<LoginSuccessResponse> {
-  return getApiClient().login(payload);
+  return httpApiClient.login(payload);
 }
 
 export async function getOrdersRequest(
   token: string,
   params?: GetOrdersParams,
 ): Promise<OrdersResponse> {
-  return getApiClient().getOrders(token, params);
+  return httpApiClient.getOrders(token, params);
 }
 
 export async function getDashboardMetricsRequest(
   token: string,
 ): Promise<DashboardMetricsResponse> {
-  return getApiClient().getDashboardMetrics(token);
+  return httpApiClient.getDashboardMetrics(token);
 }
 
 export async function createOrderRequest(
   token: string,
   payload: CreateOrderPayload,
 ): Promise<Order> {
-  return getApiClient().createOrder(token, payload);
+  return httpApiClient.createOrder(token, payload);
 }
 
 function getApiMode(): "mock" | "real" {
@@ -98,8 +106,6 @@ function getApiMode(): "mock" | "real" {
     : "mock";
 }
 
-function getApiClient() {
-  return getApiMode() === "real" ? httpApiClient : mockApiClient;
+export function isMockApiMode(): boolean {
+  return getApiMode() === "mock";
 }
-
-export type { DashboardMetricsResponse };

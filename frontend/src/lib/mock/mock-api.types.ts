@@ -5,7 +5,7 @@ import type {
   Order,
   OrderStatus,
   OrdersResponse,
-} from "@/lib/api";
+} from "../api";
 
 export type DashboardMetricsResponse = {
   totalOrders: number;
