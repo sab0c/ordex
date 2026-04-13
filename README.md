@@ -8,8 +8,13 @@ Aplicação full stack para gerenciamento de Ordens de Serviço, construída com
 
 O projeto cobre os requisitos principais do desafio: listagem, criação, filtros, ordenação, atualização de status, regras de negócio, autenticação, testes e documentação técnica.
 
+## Contexto do desenvolvimento
+
+Inicialmente implementei o fluxo **full stack integrado** (frontend consumindo a API NestJS + PostgreSQL), para validar regras de negócio, persistência e contratos ponta a ponta. Depois, ao reler o enunciado do teste, notei o requisito explícito de **API mockada no frontend** (MSW ou similar). Por isso o projeto ficou com **dois modos**: `NEXT_PUBLIC_API_MODE=mock` (MSW + persistência no navegador) e `NEXT_PUBLIC_API_MODE=real` (consumo da API real). Assim atendo tanto ao critério de mock quanto à demonstração da integração completa.
+
 ## Sumário
 
+- [Contexto do desenvolvimento](#contexto-do-desenvolvimento)
 - [Visão Geral](#visão-geral)
 - [Stack e Tecnologias](#stack-e-tecnologias)
 - [Estrutura do Projeto](#estrutura-do-projeto)
